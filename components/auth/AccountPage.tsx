@@ -10,11 +10,13 @@ import {
   Phone,
   Tag,
   ExternalLink,
+  KeyRound,
   Pencil,
   Save,
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PasscodeInput } from "@/components/auth/PasscodeInput";
 import type { TokenReset } from "@/lib/types";
 
 interface UserProfile {
@@ -50,6 +52,14 @@ export function AccountPage() {
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [resetForm, setResetForm] = useState({
+    currentPasscode: "",
+    newPasscode: "",
+    confirmPasscode: "",
+  });
+  const [resetSaving, setResetSaving] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -63,8 +73,6 @@ export function AccountPage() {
   }, []);
 
   const handleLogout = async () => {
-    if (!window.confirm("Sign out of Ledger?")) return;
-
     setLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -124,6 +132,34 @@ export function AccountPage() {
       setFormError("Could not update profile. Please try again.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResetPasscode = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setResetSaving(true);
+    setResetError(null);
+    setResetSuccess(null);
+
+    try {
+      const response = await fetch("/api/auth/reset-passcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(resetForm),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setResetError(data.error ?? "Could not reset passcode.");
+        return;
+      }
+
+      setResetForm({ currentPasscode: "", newPasscode: "", confirmPasscode: "" });
+      setResetSuccess("Passcode updated successfully.");
+    } catch {
+      setResetError("Could not reset passcode. Please try again.");
+    } finally {
+      setResetSaving(false);
     }
   };
 
@@ -292,6 +328,64 @@ export function AccountPage() {
         </div>
       </div>
       )}
+
+      <section className="w-full space-y-5 rounded-xl border bg-card p-4 md:p-6">
+        <div className="flex items-start gap-3">
+          <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <div>
+            <h2 className="font-semibold">Reset passcode</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Choose a new six-digit passcode for your next sign in.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleResetPasscode} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-2 text-sm font-medium sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-3">
+            <span>Current passcode</span>
+            <div className="w-full sm:w-64 sm:justify-self-end">
+              <PasscodeInput
+                value={resetForm.currentPasscode}
+                onChange={(value) => setResetForm((current) => ({ ...current, currentPasscode: value }))}
+                disabled={resetSaving}
+              />
+            </div>
+          </label>
+          <label className="flex flex-col gap-2 text-sm font-medium sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-3">
+            <span>New passcode</span>
+            <div className="w-full sm:w-64 sm:justify-self-end">
+              <PasscodeInput
+                value={resetForm.newPasscode}
+                onChange={(value) => setResetForm((current) => ({ ...current, newPasscode: value }))}
+                disabled={resetSaving}
+              />
+            </div>
+          </label>
+          <label className="flex flex-col gap-2 text-sm font-medium sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-3">
+            <span>Confirm new passcode</span>
+            <div className="w-full sm:w-64 sm:justify-self-end">
+              <PasscodeInput
+                value={resetForm.confirmPasscode}
+                onChange={(value) => setResetForm((current) => ({ ...current, confirmPasscode: value }))}
+                disabled={resetSaving}
+              />
+            </div>
+          </label>
+
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {resetError && <p className="mr-auto text-sm text-destructive" role="alert">{resetError}</p>}
+            {resetSuccess && <p className="mr-auto text-sm text-emerald-600" role="status">{resetSuccess}</p>}
+            <button
+              type="submit"
+              disabled={resetSaving}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50 sm:w-auto"
+            >
+              <KeyRound className="h-4 w-4" />
+              {resetSaving ? "Updating…" : "Update passcode"}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

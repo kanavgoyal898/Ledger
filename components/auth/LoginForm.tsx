@@ -69,26 +69,25 @@ export function LoginForm() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 text-slate-100 flex items-center justify-center">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_42%),radial-gradient(circle_at_bottom_right,_rgba(251,191,36,0.12),_transparent_38%)]" />
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
       <div className="w-full max-w-sm">
         {/* Logo / Title */}
         <div className="mb-10 text-center">
           <h1 className="text-3xl font-bold tracking-tight">Ledger</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-muted-foreground">
             Sign in to your account
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="relative space-y-6 rounded-2xl border border-white/10 bg-white/[0.07] p-8 shadow-2xl shadow-black/30 backdrop-blur-xl"
+          className="space-y-6 rounded-2xl border bg-card p-8"
         >
           {/* Username */}
           <div className="space-y-2">
             <label
               htmlFor="username"
-              className="block text-sm font-medium text-slate-200"
+              className="block text-sm font-medium text-foreground"
             >
               Username
             </label>
@@ -99,7 +98,7 @@ export function LoginForm() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-black/20 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-300/60 focus:ring-2 focus:ring-sky-300/30 transition"
+              className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 transition"
               placeholder="Enter your username"
               disabled={loading}
             />
@@ -107,10 +106,10 @@ export function LoginForm() {
 
           {/* Passcode — 6 digit OTP-style */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-200">
+            <label className="block text-sm font-medium text-foreground">
               Passcode
             </label>
-            <div className="flex gap-2 justify-between">
+            <div className="grid grid-cols-6 gap-0.5 sm:gap-1">
               {digits.map((d, i) => (
                 <input
                   key={i}
@@ -123,7 +122,7 @@ export function LoginForm() {
                   onChange={(e) => handleDigitChange(i, e.target.value)}
                   onKeyDown={(e) => handleDigitKeyDown(i, e)}
                   onPaste={i === 0 ? handlePaste : undefined}
-                  className="h-12 w-11 rounded-lg border border-white/10 bg-black/20 text-center text-lg font-semibold text-white outline-none transition duration-200 focus:-translate-y-1 focus:border-amber-300/70 focus:ring-2 focus:ring-amber-300/30"
+                  className="h-12 min-w-0 w-full rounded-lg border bg-background text-center text-lg font-semibold outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 transition"
                   disabled={loading}
                 />
               ))}
@@ -132,7 +131,7 @@ export function LoginForm() {
 
           {/* Error */}
           {error && (
-            <p className="text-sm text-rose-300" role="alert">
+            <p className="text-sm text-destructive" role="alert">
               {error}
             </p>
           )}
@@ -141,7 +140,7 @@ export function LoginForm() {
           <button
             type="submit"
             disabled={loading || !username}
-            className="w-full rounded-lg bg-amber-300 px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+            className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
           >
             {loading ? "Signing in…" : "Sign in"}
           </button>
