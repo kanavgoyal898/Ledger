@@ -323,7 +323,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       {settings.categories?.filter(c => !c.deleted || c.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
                         <SelectItem key={c._key} value={c.label}>
                           <NameColor name={c.label} />
@@ -361,7 +361,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       {selectedCategory?.subCategories?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
                           <NameColor name={s.label} />
@@ -395,7 +395,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       {settings.accounts?.filter(a => !a.deleted || a.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((a) => (
                         <SelectItem key={a._key} value={a.label}>
                           <NameColor name={a.label} />
@@ -433,7 +433,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent align="start" alignItemWithTrigger={false}>
                       {selectedAccount?.subAccounts?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
                           <NameColor name={s.label} />

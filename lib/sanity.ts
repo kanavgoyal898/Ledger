@@ -9,7 +9,7 @@ export const sanityClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false, // always fresh data for a CRUD app
+  useCdn: true,
 });
 
 /** Write client — uses token from env (server-side only) */

@@ -106,7 +106,6 @@ export default function TransactionsPage() {
       const [expRes, settRes] = await Promise.all([
         fetch(`/api/transactions?${params}`),
         fetch("/api/settings"),
-        fetch("/api/recurring"),
       ]);
 
       const [expData, settData] = await Promise.all([

@@ -52,7 +52,7 @@ function SplitLegend({ data, onSelect }: { data: SplitItem[]; onSelect?: () => v
             </TableRow>
             {entry.accounts.map((account) => (
               <Fragment key={`${entry.label}-${account.label}`}>
-                <TableRow {...rowProps}>
+                <TableRow {...rowProps} key={`${entry.label}-${account.label}`}>
                   <TableCell className="pl-8 text-muted-foreground">{account.label}</TableCell>
                   <TableCell className="text-right font-mono tabular-nums">{formatINR(account.value)}</TableCell>
                 </TableRow>
