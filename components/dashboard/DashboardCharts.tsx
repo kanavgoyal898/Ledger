@@ -39,27 +39,27 @@ function SplitLegend({ data, onSelect }: { data: SplitItem[]; onSelect?: () => v
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((entry) => (
-          <Fragment key={entry.label}>
-            <TableRow {...rowProps}>
-              <TableCell>
+        {data.map((entry, entryIndex) => (
+          <Fragment key={`${entryIndex}-${entry.label}`}>
+            <TableRow {...rowProps} key={`${entryIndex}-${entry.label}-row`}>
+              <TableCell key={`${entryIndex}-${entry.label}-cell`}>
                 <div className="flex min-w-0 items-center gap-2 font-medium">
                   <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: entry.fill }} />
                   <span className="min-w-0 wrap-break-word">{entry.label}</span>
                 </div>
               </TableCell>
-              <TableCell className="text-right font-mono font-medium tabular-nums">{formatINR(entry.value)}</TableCell>
+              <TableCell key={`${entryIndex}-${entry.label}-amount`} className="text-right font-mono font-medium tabular-nums">{formatINR(entry.value)}</TableCell>
             </TableRow>
-            {entry.accounts.map((account) => (
-              <Fragment key={`${entry.label}-${account.label}`}>
-                <TableRow {...rowProps} key={`${entry.label}-${account.label}`}>
-                  <TableCell className="pl-8 text-muted-foreground">{account.label}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{formatINR(account.value)}</TableCell>
+            {entry.accounts.map((account, accountIndex) => (
+              <Fragment key={`${entryIndex}-${accountIndex}-${account.label}`}>
+                <TableRow {...rowProps} key={`${entryIndex}-${accountIndex}-${account.label}-row`}>
+                  <TableCell key={`${entryIndex}-${accountIndex}-${account.label}-cell`} className="pl-8 text-muted-foreground">{account.label}</TableCell>
+                  <TableCell key={`${entryIndex}-${accountIndex}-${account.label}-amount`} className="text-right font-mono tabular-nums">{formatINR(account.value)}</TableCell>
                 </TableRow>
-                {account.subAccounts.map((subAccount) => (
-                  <TableRow {...rowProps} key={`${entry.label}-${account.label}-${subAccount.label}`}>
-                    <TableCell className="pl-12 text-muted-foreground">{subAccount.label}</TableCell>
-                    <TableCell className="text-right font-mono text-muted-foreground tabular-nums">{formatINR(subAccount.value)}</TableCell>
+                {account.subAccounts.map((subAccount, subAccountIndex) => (
+                  <TableRow {...rowProps} key={`${entryIndex}-${accountIndex}-${subAccountIndex}-${subAccount.label}`}>
+                    <TableCell key={`${entryIndex}-${accountIndex}-${subAccountIndex}-${subAccount.label}-cell`} className="pl-12 text-muted-foreground">{subAccount.label}</TableCell>
+                    <TableCell key={`${entryIndex}-${accountIndex}-${subAccountIndex}-${subAccount.label}-amount`} className="text-right font-mono text-muted-foreground tabular-nums">{formatINR(subAccount.value)}</TableCell>
                   </TableRow>
                 ))}
               </Fragment>
@@ -224,7 +224,7 @@ export function DashboardCharts({ transactions, range }: { transactions: Transac
                             setExpandedCategories((current) => ({ ...current, [type]: selected.label }))
                           }
                       }}>
-                        {data.map((entry) => <Cell key={entry.label} fill={entry.fill} />)}
+                        {data.map((entry, index) => <Cell key={`${index}-${entry.label}`} fill={entry.fill} />)}
                       </Pie>
                     </PieChart>
                   </ChartContainer>

@@ -87,24 +87,12 @@ export function TransactionSheet({
     },
   });
 
-  const watchedCategory = form.watch("category");
-  const watchedAccount = form.watch("account");
-
   const selectedCategory = settings.categories?.find(
-    (c) => c.label === watchedCategory
+    (c) => c.label === form.watch("category")
   );
   const selectedAccount = settings.accounts?.find(
-    (a) => a.label === watchedAccount
+    (a) => a.label === form.watch("account")
   );
-
-  // Reset sub-fields when parent changes
-  useEffect(() => {
-    form.setValue("subCategory", "");
-  }, [watchedCategory, form]);
-
-  useEffect(() => {
-    form.setValue("subAccount", "");
-  }, [watchedAccount, form]);
 
   // Populate form when editing
   useEffect(() => {
@@ -310,7 +298,13 @@ export function TransactionSheet({
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.setValue("subCategory", "");
+                    }}
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Category">
@@ -382,7 +376,13 @@ export function TransactionSheet({
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Account</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      form.setValue("subAccount", "");
+                    }}
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Account">
