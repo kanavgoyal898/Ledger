@@ -185,13 +185,13 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
         {/* Add new account */}
         <div className="flex flex-col gap-2">
           <Input
-            placeholder="New account name"
+            placeholder="New Account Name"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addAccount()}
           />
           <Textarea
-            placeholder="Description (optional)"
+            placeholder="Description (Optional)"
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             rows={2}
@@ -206,7 +206,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
         <Separator />
 
         {activeItems.length === 0 && (
-          <p className="text-sm text-muted-foreground">No accounts yet.</p>
+          <p className="text-sm text-muted-foreground">No Accounts Yet.</p>
         )}
 
         <div className="flex flex-col gap-2">
@@ -227,7 +227,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
                       autoFocus
                     />
                     <Textarea
-                      placeholder="Description (optional)"
+                      placeholder="Description (Optional)"
                       value={editState.description}
                       onChange={(e) => setEditState(prev => ({ ...prev, description: e.target.value }))}
                       rows={2}
@@ -310,7 +310,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
                                   autoFocus
                                 />
                                 <Textarea
-                                  placeholder="Description (optional)"
+                                  placeholder="Description (Optional)"
                                   value={editState.description}
                                   onChange={(e) => setEditState(prev => ({ ...prev, description: e.target.value }))}
                                   rows={2}
@@ -371,7 +371,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
                       {/* Add sub-account form */}
                       <div className="mt-1 flex flex-col gap-2 border-t pt-2">
                         <Input
-                          placeholder="New sub-account name"
+                          placeholder="New Sub-Account Name"
                           value={newSubMap[acc._key]?.label ?? ""}
                           onChange={(e) =>
                             setNewSubMap((prev) => ({
@@ -383,7 +383,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
                           className="h-8 text-sm"
                         />
                         <Textarea
-                          placeholder="Description (optional)"
+                          placeholder="Description (Optional)"
                           value={newSubMap[acc._key]?.description ?? ""}
                           onChange={(e) =>
                             setNewSubMap((prev) => ({

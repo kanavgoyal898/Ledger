@@ -43,14 +43,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 mb-16 scrollbar-hide">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
       </div>
 
       {loading ? (
         <div className="flex h-48 items-center justify-center">
-          <p className="text-sm text-muted-foreground">Loading settings…</p>
+          <p className="text-sm text-muted-foreground">Loading Settings…</p>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">

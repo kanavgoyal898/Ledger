@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
     query += `] | order(date desc) {
       _id, _type, _createdAt, _updatedAt,
       type, date, amount, category, subCategory,
-      account, subAccount, heading, description
+      account, subAccount, heading, description,
+      recurringTransactionId, recurringOccurrence
     }`;
 
     const transactions = await sanityClient.fetch(query, params, {

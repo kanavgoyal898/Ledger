@@ -185,13 +185,13 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
         {/* Add new category */}
         <div className="flex flex-col gap-2">
           <Input
-            placeholder="New category name"
+            placeholder="New Category Name"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addCategory()}
           />
           <Textarea
-            placeholder="Description (optional)"
+            placeholder="Description (Optional)"
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             rows={2}
@@ -206,7 +206,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
         <Separator />
 
         {activeItems.length === 0 && (
-          <p className="text-sm text-muted-foreground">No categories yet.</p>
+          <p className="text-sm text-muted-foreground">No Categories Yet.</p>
         )}
 
         <div className="flex flex-col gap-2">
@@ -227,7 +227,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
                       autoFocus
                     />
                     <Textarea
-                      placeholder="Description (optional)"
+                      placeholder="Description (Optional)"
                       value={editState.description}
                       onChange={(e) => setEditState(prev => ({ ...prev, description: e.target.value }))}
                       rows={2}
@@ -310,7 +310,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
                                   autoFocus
                                 />
                                 <Textarea
-                                  placeholder="Description (optional)"
+                                  placeholder="Description (Optional)"
                                   value={editState.description}
                                   onChange={(e) => setEditState(prev => ({ ...prev, description: e.target.value }))}
                                   rows={2}
@@ -371,7 +371,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
                       {/* Add sub-category form */}
                       <div className="mt-1 flex flex-col gap-2 border-t pt-2">
                         <Input
-                          placeholder="New sub-category name"
+                          placeholder="New Sub-Category Name"
                           value={newSubMap[cat._key]?.label ?? ""}
                           onChange={(e) =>
                             setNewSubMap((prev) => ({
@@ -383,7 +383,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
                           className="h-8 text-sm"
                         />
                         <Textarea
-                          placeholder="Description (optional)"
+                          placeholder="Description (Optional)"
                           value={newSubMap[cat._key]?.description ?? ""}
                           onChange={(e) =>
                             setNewSubMap((prev) => ({

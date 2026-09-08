@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   const recent = transactions.slice(0, 10);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 mb-16 scrollbar-hide">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
             <div className={`text-2xl font-bold ${netBalance >= 0 ? "text-emerald-500" : "text-destructive"}`}>
               {formatINR(netBalance)}
             </div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">This Month</p>
           </CardContent>
         </Card>
 
@@ -69,7 +69,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatINR(totalIncome)}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">This Month</p>
           </CardContent>
         </Card>
 
@@ -80,7 +80,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatINR(totalExpense)}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">This Month</p>
           </CardContent>
         </Card>
       </div>

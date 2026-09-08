@@ -57,7 +57,7 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
   if (transactions.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center rounded-md border border-dashed">
-        <p className="text-sm text-muted-foreground">No transactions found.</p>
+        <p className="text-sm text-muted-foreground">No Transactions Found.</p>
       </div>
     );
   }
@@ -132,7 +132,7 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
                       }
                     >
                       <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
+                      <span className="sr-only">Open Menu</span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEdit(transaction)}>

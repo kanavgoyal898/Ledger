@@ -44,7 +44,10 @@ import {
   type TransactionFormValues,
   type Settings,
   transactionFormSchema,
+  RECURRENCE_FREQUENCIES,
+  type RecurrenceFrequency,
 } from "@/lib/types";
+import { formatRecurrenceFrequency } from "@/lib/recurrence";
 
 interface TransactionSheetProps {
   open: boolean;
@@ -63,6 +66,10 @@ export function TransactionSheet({
 }: TransactionSheetProps) {
   const isEditing = Boolean(transaction);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [repeat, setRepeat] = useState<"none" | "recurring">("none");
+  const [frequency, setFrequency] = useState<RecurrenceFrequency | "">("");
+  const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
+  const [endDate, setEndDate] = useState("");
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
@@ -124,21 +131,29 @@ export function TransactionSheet({
         heading: "",
         description: "",
       });
+      setRepeat("none");
+      setFrequency("");
+      setStartDate(new Date().toISOString().slice(0, 10));
+      setEndDate("");
     }
   }, [transaction, form, open]);
 
   async function onSubmit(values: TransactionFormValues) {
     setIsSubmitting(true);
     try {
-      const url = isEditing
+      const url = repeat === "recurring" && !isEditing
+        ? "/api/recurring"
+        : isEditing
         ? `/api/transactions/${transaction!._id}`
         : "/api/transactions";
-      const method = isEditing ? "PATCH" : "POST";
+      const method = repeat === "recurring" && !isEditing ? "POST" : isEditing ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(repeat === "recurring" && !isEditing
+          ? { ...values, frequency, startDate, ...(endDate ? { endDate } : {}) }
+          : values),
       });
 
       if (!res.ok) {
@@ -160,8 +175,8 @@ export function TransactionSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col sm:w-full">
-        <DialogHeader className="px-4 sm:px-6 pt-2 pb-2 shrink-0">
+      <DialogContent className="w-[95vw] max-w-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col sm:w-full" showCloseButton={false}>
+        <DialogHeader className="px-4 sm:px-6 pt-6 pb-2 shrink-0">
           <DialogTitle>
             {isEditing ? "Edit Transaction" : "Add Transaction"}
           </DialogTitle>
@@ -170,7 +185,7 @@ export function TransactionSheet({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="mt-4 flex flex-col gap-2 px-4 sm:px-6 pb-6 overflow-y-auto flex-1"
+            className="flex flex-col gap-2 px-4 sm:px-6 pb-6 overflow-y-auto flex-1"
           >
             {/* Type Toggle */}
             <FormField
@@ -196,6 +211,37 @@ export function TransactionSheet({
             />
 
             {/* Date */}
+            {!isEditing && (
+              <FormItem>
+                <FormLabel>Repeat</FormLabel>
+                <Button
+                  type="button"
+                  variant={repeat === "recurring" ? "secondary" : "outline"}
+                  aria-pressed={repeat === "recurring"}
+                  onClick={() => setRepeat(repeat === "recurring" ? "none" : "recurring")}
+                  className="w-full justify-between rounded-full px-4"
+                >
+                  <span>Recurring</span>
+                  <span>{repeat === "recurring" ? "On" : "Off (Does Not Repeat)"}</span>
+                </Button>
+              </FormItem>
+            )}
+
+            {repeat === "recurring" && !isEditing && (
+              <div className="flex flex-col gap-2">
+                <FormItem>
+                  <FormLabel>Frequency</FormLabel>
+                  <Select value={frequency} onValueChange={(value) => setFrequency(value as RecurrenceFrequency)}>
+                    <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select Frequency">{frequency ? formatRecurrenceFrequency(frequency) : undefined}</SelectValue></SelectTrigger></FormControl>
+                    <SelectContent className="w-80 max-w-[calc(100vw-2rem)]">{RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}</SelectContent>
+                  </Select>
+                </FormItem>
+                <FormItem><FormLabel>Start Date</FormLabel><Input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></FormItem>
+                <FormItem><FormLabel>End Date</FormLabel><Input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></FormItem>
+              </div>
+            )}
+
+            {!isEditing && repeat === "none" && (
             <FormField
               control={form.control}
               name="date"
@@ -233,6 +279,7 @@ export function TransactionSheet({
                 </FormItem>
               )}
             />
+            )}
 
             {/* Amount */}
             <FormField
@@ -265,7 +312,7 @@ export function TransactionSheet({
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder="Select Category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -295,7 +342,7 @@ export function TransactionSheet({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select sub-category" />
+                        <SelectValue placeholder="Select Sub-Category" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -321,7 +368,7 @@ export function TransactionSheet({
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select account" />
+                        <SelectValue placeholder="Select Account" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -351,7 +398,7 @@ export function TransactionSheet({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select sub-account" />
+                        <SelectValue placeholder="Select Sub-Account" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -375,7 +422,7 @@ export function TransactionSheet({
                 <FormItem>
                   <FormLabel>Heading</FormLabel>
                   <FormControl>
-                    <Input placeholder="Short title (optional)" {...field} />
+                    <Input placeholder="Short Title (Optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -391,7 +438,7 @@ export function TransactionSheet({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Additional notes (optional)"
+                      placeholder="Additional Notes (Optional)"
                       rows={3}
                       {...field}
                     />

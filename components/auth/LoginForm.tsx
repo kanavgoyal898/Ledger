@@ -69,7 +69,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 text-foreground scrollbar-hide">
       <div className="w-full max-w-sm">
         {/* Logo / Title */}
         <div className="mb-10 text-center">
@@ -99,7 +99,7 @@ export function LoginForm() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-full rounded-lg border bg-background px-4 py-2.5 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2 transition"
-              placeholder="Enter your username"
+              placeholder="Enter Your Username"
               disabled={loading}
             />
           </div>

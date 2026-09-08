@@ -18,7 +18,7 @@ export function FloatingDeck() {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-row items-center gap-3">
       {/* Navigation pill */}
-      <nav className="flex items-center justify-between sm:justify-center sm:gap-1 rounded-full bg-background/80 backdrop-blur-lg border p-1">
+      <nav className="flex items-center justify-between sm:justify-center sm:gap-1 rounded-full bg-background/80 backdrop-blur-lg border shadow-lg p-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
 

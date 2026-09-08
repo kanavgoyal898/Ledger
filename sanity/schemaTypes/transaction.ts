@@ -66,6 +66,8 @@ export const transactionSchema = defineType({
       type: "text",
       rows: 3,
     }),
+    defineField({ name: "recurringTransactionId", title: "Recurring Transaction", type: "string" }),
+    defineField({ name: "recurringOccurrence", title: "Recurring Occurrence", type: "date" }),
   ],
   preview: {
     select: {

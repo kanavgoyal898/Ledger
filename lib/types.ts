@@ -75,6 +75,50 @@ export interface Transaction {
   subAccount?: string;
   heading?: string;
   description?: string;
+  recurringTransactionId?: string;
+  recurringOccurrence?: string;
+}
+
+export const RECURRENCE_FREQUENCIES = [
+  "daily",
+  "every_week",
+  "every_month",
+  "every_year",
+  "first_day_of_every_week",
+  "last_day_of_every_week",
+  "first_working_day_of_every_week",
+  "last_working_day_of_every_week",
+  "first_day_of_every_month",
+  "last_day_of_every_month",
+  "first_working_day_of_every_month",
+  "last_working_day_of_every_month",
+  "first_day_of_every_year",
+  "last_day_of_every_year",
+  "first_working_day_of_every_year",
+  "last_working_day_of_every_year",
+] as const;
+
+export type RecurrenceFrequency = (typeof RECURRENCE_FREQUENCIES)[number];
+
+export interface RecurringTransaction {
+  _id: string;
+  _type: "recurringTransaction";
+  _createdAt: string;
+  _updatedAt: string;
+  type: "income" | "expense";
+  amount: number;
+  category: string;
+  subCategory?: string;
+  account: string;
+  subAccount?: string;
+  heading?: string;
+  description?: string;
+  frequency: RecurrenceFrequency;
+  startDate: string;
+  endDate?: string;
+  active: boolean;
+  nextOccurrence?: string;
+  resumeFrom?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -94,6 +138,20 @@ export const transactionFormSchema = z.object({
 });
 
 export type TransactionFormValues = z.infer<typeof transactionFormSchema>;
+
+export const recurringTransactionFormSchema = transactionFormSchema
+  .omit({ date: true })
+  .extend({
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().optional(),
+    frequency: z.enum(RECURRENCE_FREQUENCIES),
+  })
+  .refine((value) => !value.endDate || value.endDate >= value.startDate, {
+    message: "End date must be on or after the start date",
+    path: ["endDate"],
+  });
+
+export type RecurringTransactionFormValues = z.infer<typeof recurringTransactionFormSchema>;
 
 export const subItemSchema = z.object({
   label: z.string().min(1),
@@ -130,7 +188,10 @@ export const TRANSACTIONS_QUERY = `
     account,
     subAccount,
     heading,
-    description
+    description,
+    recurringTransactionId,
+    recurringOccurrence,
+    resumeFrom
   }
 `;
 
@@ -148,7 +209,9 @@ export const TRANSACTION_BY_ID_QUERY = `
     account,
     subAccount,
     heading,
-    description
+    description,
+    recurringTransactionId,
+    recurringOccurrence
   }
 `;
 

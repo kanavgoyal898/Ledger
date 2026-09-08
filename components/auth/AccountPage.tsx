@@ -180,7 +180,7 @@ export function AccountPage() {
   }
 
   return (
-    <div className="flex w-full max-w-4xl flex-col gap-6">
+    <div className="flex w-full max-w-4xl flex-col gap-6 mb-16 scrollbar-hide">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Account</h1>
       </div>
@@ -321,7 +321,7 @@ export function AccountPage() {
 
         <div className="flex items-center gap-3 px-4 py-3">
           <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="text-muted-foreground w-28 shrink-0">Session expires</span>
+          <span className="text-muted-foreground w-28 shrink-0">Session Expires</span>
           <span className="font-medium">
             {tokenResetLabels[user.tokenReset] ?? user.tokenReset}
           </span>
@@ -333,7 +333,7 @@ export function AccountPage() {
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div>
-            <h2 className="font-semibold">Reset passcode</h2>
+            <h2 className="font-semibold">Reset Passcode</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Choose a new six-digit passcode for your next sign in.
             </p>
@@ -342,7 +342,7 @@ export function AccountPage() {
 
         <form onSubmit={handleResetPasscode} className="flex flex-col gap-4">
           <label className="flex flex-col gap-2 text-sm font-medium sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-3">
-            <span>Current passcode</span>
+            <span>Current Passcode</span>
             <div className="w-full sm:w-64 sm:justify-self-end">
               <PasscodeInput
                 value={resetForm.currentPasscode}
@@ -352,7 +352,7 @@ export function AccountPage() {
             </div>
           </label>
           <label className="flex flex-col gap-2 text-sm font-medium sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-3">
-            <span>New passcode</span>
+            <span>New Passcode</span>
             <div className="w-full sm:w-64 sm:justify-self-end">
               <PasscodeInput
                 value={resetForm.newPasscode}
@@ -362,7 +362,7 @@ export function AccountPage() {
             </div>
           </label>
           <label className="flex flex-col gap-2 text-sm font-medium sm:grid sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:items-center sm:gap-3">
-            <span>Confirm new passcode</span>
+            <span>Confirm New Passcode</span>
             <div className="w-full sm:w-64 sm:justify-self-end">
               <PasscodeInput
                 value={resetForm.confirmPasscode}

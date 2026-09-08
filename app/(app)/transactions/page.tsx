@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionSheet } from "@/components/transactions/TransactionSheet";
+import { RecurringTransactionsSection } from "@/components/transactions/RecurringTransactionsSection";
 import type { Transaction, Settings } from "@/lib/types";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -57,6 +58,7 @@ export default function TransactionsPage() {
       const [expRes, settRes] = await Promise.all([
         fetch(`/api/transactions?${params}`),
         fetch("/api/settings"),
+        fetch("/api/recurring"),
       ]);
 
       const [expData, settData] = await Promise.all([
@@ -113,7 +115,7 @@ export default function TransactionsPage() {
     filterTo;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 mb-16 scrollbar-hide">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
       </div>
@@ -124,7 +126,7 @@ export default function TransactionsPage() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             id="search-input"
-            placeholder="Search transactions…"
+            placeholder="Search Transactions…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-8"
@@ -133,10 +135,10 @@ export default function TransactionsPage() {
 
         <Select value={filterCategory} onValueChange={setFilterCategory}>
           <SelectTrigger id="filter-category" className="w-44">
-            <SelectValue placeholder="All categories" />
+            <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {settings.categories?.map((c) => (
               <SelectItem key={c._key} value={c.label}>
                 {c.label}
@@ -147,10 +149,10 @@ export default function TransactionsPage() {
 
         <Select value={filterAccount} onValueChange={setFilterAccount}>
           <SelectTrigger id="filter-account" className="w-40">
-            <SelectValue placeholder="All accounts" />
+            <SelectValue placeholder="All Accounts" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All accounts</SelectItem>
+            <SelectItem value="all">All Accounts</SelectItem>
             {settings.accounts?.map((a) => (
               <SelectItem key={a._key} value={a.label}>
                 {a.label}
@@ -165,7 +167,7 @@ export default function TransactionsPage() {
           value={filterFrom}
           onChange={(e) => setFilterFrom(e.target.value)}
           className="w-40"
-          aria-label="From date"
+          aria-label="From Date"
         />
         <Input
           id="filter-to"
@@ -173,7 +175,7 @@ export default function TransactionsPage() {
           value={filterTo}
           onChange={(e) => setFilterTo(e.target.value)}
           className="w-40"
-          aria-label="To date"
+          aria-label="To Date"
         />
 
         {hasFilters && (
@@ -186,7 +188,7 @@ export default function TransactionsPage() {
       {/* Table */}
       {loading ? (
         <div className="flex h-48 items-center justify-center">
-          <p className="text-sm text-muted-foreground">Loading transactions…</p>
+          <p className="text-sm text-muted-foreground">Loading Transactions…</p>
         </div>
       ) : (
         <TransactionTable
@@ -195,6 +197,8 @@ export default function TransactionsPage() {
           onDelete={handleDelete}
         />
       )}
+
+      <RecurringTransactionsSection />
 
       {/* Create / Edit Sheet */}
       <TransactionSheet
