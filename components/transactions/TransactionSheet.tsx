@@ -38,6 +38,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { NameColor } from "@/components/ui/name-color";
 
 import {
   type Transaction,
@@ -312,12 +313,20 @@ export function TransactionSheet({
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Category" />
+                        <SelectValue placeholder="Select Category">
+                          {field.value && (
+                            <span className="flex items-center gap-2">
+                              <NameColor name={field.value} />
+                              {field.value}
+                            </span>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {settings.categories?.filter(c => !c.deleted || c.label === field.value).map((c) => (
+                      {settings.categories?.filter(c => !c.deleted || c.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
                         <SelectItem key={c._key} value={c.label}>
+                          <NameColor name={c.label} />
                           {c.label} {c.deleted ? "(Deleted)" : ""}
                         </SelectItem>
                       ))}
@@ -342,12 +351,20 @@ export function TransactionSheet({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Sub-Category" />
+                        <SelectValue placeholder="Select Sub-Category">
+                          {field.value && (
+                            <span className="flex items-center gap-2">
+                              <NameColor name={field.value} />
+                              {field.value}
+                            </span>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {selectedCategory?.subCategories?.filter(s => !s.deleted || s.label === field.value).map((s) => (
+                      {selectedCategory?.subCategories?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
+                          <NameColor name={s.label} />
                           {s.label} {s.deleted ? "(Deleted)" : ""}
                         </SelectItem>
                       ))}
@@ -368,12 +385,20 @@ export function TransactionSheet({
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Account" />
+                        <SelectValue placeholder="Select Account">
+                          {field.value && (
+                            <span className="flex items-center gap-2">
+                              <NameColor name={field.value} />
+                              {field.value}
+                            </span>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {settings.accounts?.filter(a => !a.deleted || a.label === field.value).map((a) => (
+                      {settings.accounts?.filter(a => !a.deleted || a.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((a) => (
                         <SelectItem key={a._key} value={a.label}>
+                          <NameColor name={a.label} />
                           {a.label} {a.deleted ? "(Deleted)" : ""}
                         </SelectItem>
                       ))}
@@ -398,12 +423,20 @@ export function TransactionSheet({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Sub-Account" />
+                        <SelectValue placeholder="Select Sub-Account">
+                          {field.value && (
+                            <span className="flex items-center gap-2">
+                              <NameColor name={field.value} />
+                              {field.value}
+                            </span>
+                          )}
+                        </SelectValue>
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {selectedAccount?.subAccounts?.filter(s => !s.deleted || s.label === field.value).map((s) => (
+                      {selectedAccount?.subAccounts?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
+                          <NameColor name={s.label} />
                           {s.label} {s.deleted ? "(Deleted)" : ""}
                         </SelectItem>
                       ))}

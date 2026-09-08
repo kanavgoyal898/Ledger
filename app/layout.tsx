@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -8,6 +8,11 @@ export const metadata: Metadata = {
     template: "%s | Ledger",
   },
   description: "A simple personal transaction tracking application.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

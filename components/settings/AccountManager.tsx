@@ -13,6 +13,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { NameColor } from "@/components/ui/name-color";
 import type { AccountItem } from "@/lib/types";
 
 interface AccountManagerProps {
@@ -171,7 +172,9 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const activeItems = items.filter(a => !a.deleted);
+  const activeItems = items
+    .filter(a => !a.deleted)
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <Card>
@@ -211,7 +214,9 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
 
         <div className="flex flex-col gap-2">
           {activeItems.map((acc) => {
-            const activeSubs = (acc.subAccounts ?? []).filter(s => !s.deleted);
+            const activeSubs = (acc.subAccounts ?? [])
+              .filter(s => !s.deleted)
+              .sort((a, b) => a.label.localeCompare(b.label));
             const accEditId = `acc:${acc._key}`;
             const isEditingAcc = editingId === accEditId;
 
@@ -257,6 +262,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
                         ) : (
                           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                         )}
+                        <NameColor name={acc.label} />
                         <span>{acc.label}</span>
                         <span className="ml-auto text-xs text-muted-foreground">
                           {activeSubs.length}
@@ -335,7 +341,10 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
                             ) : (
                               <div className="flex items-start gap-2 p-2">
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium">{sub.label}</p>
+                                  <p className="flex items-center gap-2 text-sm font-medium">
+                                    <NameColor name={sub.label} />
+                                    {sub.label}
+                                  </p>
                                   {sub.description && (
                                     <p className="text-xs text-muted-foreground mt-0.5">{sub.description}</p>
                                   )}

@@ -6,7 +6,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
+    const subCategory = searchParams.get("subCategory");
     const account = searchParams.get("account");
+    const subAccount = searchParams.get("subAccount");
     const from = searchParams.get("from");
     const to = searchParams.get("to");
     const search = searchParams.get("search");
@@ -23,9 +25,17 @@ export async function GET(request: NextRequest) {
       query += ` && category == $category`;
       params.category = category;
     }
+    if (subCategory) {
+      query += ` && subCategory == $subCategory`;
+      params.subCategory = subCategory;
+    }
     if (account) {
       query += ` && account == $account`;
       params.account = account;
+    }
+    if (subAccount) {
+      query += ` && subAccount == $subAccount`;
+      params.subAccount = subAccount;
     }
     if (from) {
       query += ` && date >= $from`;
@@ -36,7 +46,7 @@ export async function GET(request: NextRequest) {
       params.to = to;
     }
     if (search) {
-      query += ` && (heading match $search || description match $search || category match $search)`;
+      query += ` && (heading match $search || description match $search || category match $search || subCategory match $search || account match $search || subAccount match $search)`;
       params.search = `*${search}*`;
     }
 
