@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 export const metadata: Metadata = {
   title: {
     default: "Ledger — Transaction Manager",
-    template: "%s | Ledger",
+    template: "Ledger - %s",
   },
   description: "A simple personal transaction tracking application.",
 };

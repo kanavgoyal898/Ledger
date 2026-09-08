@@ -128,7 +128,7 @@ export interface RecurringTransaction {
 export const transactionFormSchema = z.object({
   type: z.enum(["income", "expense"]).default("expense"),
   date: z.string().min(1, "Date is required"),
-  amount: z.coerce.number({ invalid_type_error: "Amount must be a number" }).min(0, "Amount must be ≥ 0"),
+  amount: z.coerce.number({ error: "Amount must be a number" }).min(0, "Amount must be ≥ 0"),
   category: z.string().min(1, "Category is required"),
   subCategory: z.string().optional(),
   account: z.string().min(1, "Account is required"),
@@ -137,7 +137,10 @@ export const transactionFormSchema = z.object({
   description: z.string().optional(),
 });
 
-export type TransactionFormValues = z.infer<typeof transactionFormSchema>;
+/** Shape after zodResolver parses/coerces the form — used for onSubmit and API payloads. */
+export type TransactionFormValues = z.output<typeof transactionFormSchema>;
+/** Shape RHF's form state actually holds before validation runs. */
+export type TransactionFormInput = z.input<typeof transactionFormSchema>;
 
 export const recurringTransactionFormSchema = transactionFormSchema
   .omit({ date: true })

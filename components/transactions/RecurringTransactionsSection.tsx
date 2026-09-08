@@ -18,9 +18,9 @@ function displayDate(value?: string) {
   return value ? format(parseISO(value.slice(0, 10)), "d MMM yyyy") : "No End Date";
 }
 
-function transactionDatesForCalendar(rule: RecurringTransaction) {
+function transactionDatesForCalendar(rule: RecurringTransaction): Date[] {
   const throughDate = format(addMonths(new Date(), 12), "yyyy-MM-dd");
-  return occurrenceDates(rule.startDate, rule.frequency, throughDate, rule.endDate).map(parseISO);
+  return occurrenceDates(rule.startDate, rule.frequency, throughDate, rule.endDate).map((date) => parseISO(date));
 }
 
 function calendarTransactionsForRules(rules: RecurringTransaction[]) {

@@ -43,6 +43,7 @@ import { NameColor } from "@/components/ui/name-color";
 import {
   type Transaction,
   type TransactionFormValues,
+  type TransactionFormInput,
   type Settings,
   transactionFormSchema,
   RECURRENCE_FREQUENCIES,
@@ -72,7 +73,7 @@ export function TransactionSheet({
   const [startDate, setStartDate] = useState(new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState("");
 
-  const form = useForm<TransactionFormValues>({
+  const form = useForm<TransactionFormInput, any, TransactionFormValues>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       type: "expense",
@@ -260,7 +261,6 @@ export function TransactionSheet({
                         onSelect={(d) =>
                           field.onChange(d ? d.toISOString() : "")
                         }
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -283,7 +283,11 @@ export function TransactionSheet({
                       step="0.01"
                       min="0"
                       placeholder="0.00"
-                      {...field}
+                      name={field.name}
+                      ref={field.ref}
+                      value={(field.value ?? "") as number | string}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
                     />
                   </FormControl>
                   <FormMessage />
@@ -303,7 +307,7 @@ export function TransactionSheet({
                       field.onChange(value);
                       form.setValue("subCategory", "");
                     }}
-                    value={field.value}
+                    value={field.value ?? "expense"}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
