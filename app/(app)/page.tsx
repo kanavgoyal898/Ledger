@@ -44,9 +44,6 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            {format(now, "EEEE, d MMMM yyyy")}
-          </p>
         </div>
       </div>
 
@@ -92,9 +89,7 @@ export default async function DashboardPage() {
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">Recent Transactions</h2>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/transactions">View all →</Link>
-          </Button>
+          <Button variant="ghost" size="sm" nativeButton={false} render={<Link href="/transactions">View all →</Link>} />
         </div>
 
         {recent.length === 0 ? (

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Search, X } from "lucide-react";
-import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,9 +116,6 @@ export default function TransactionsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
-        <p className="text-sm text-muted-foreground">
-          {loading ? "Loading…" : `${transactions.length} transaction${transactions.length !== 1 ? "s" : ""}`}
-        </p>
       </div>
 
       {/* Filters */}

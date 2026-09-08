@@ -1,12 +1,11 @@
-"use client";
 /**
  * Embedded Sanity Studio at /studio
+ * Server Component — metadata/viewport must be exported from a Server Component.
  */
-import config from "@/sanity.config";
-import { NextStudio } from "next-sanity/studio";
-
 export { metadata, viewport } from "next-sanity/studio";
 
+import StudioClient from "./_StudioClient";
+
 export default function StudioPage() {
-  return <NextStudio config={config} />;
+  return <StudioClient />;
 }

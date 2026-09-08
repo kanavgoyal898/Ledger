@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Metadata } from "next";
 import { CategoryManager } from "@/components/settings/CategoryManager";
 import { AccountManager } from "@/components/settings/AccountManager";
 import type { Settings, CategoryItem, AccountItem } from "@/lib/types";
@@ -47,9 +46,6 @@ export default function SettingsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">
-          Configure expense categories and payment accounts.
-        </p>
       </div>
 
       {loading ? (

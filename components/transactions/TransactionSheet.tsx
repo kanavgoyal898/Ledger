@@ -203,19 +203,21 @@ export function TransactionSheet({
                 <FormItem className="flex flex-col">
                   <FormLabel>Date</FormLabel>
                   <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value
-                            ? format(new Date(field.value), "PPP")
-                            : "Pick a date"}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
+                    <FormControl>
+                      <PopoverTrigger
+                        render={
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal"
+                          />
+                        }
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {field.value
+                          ? format(new Date(field.value), "PPP")
+                          : "Pick a date"}
+                      </PopoverTrigger>
+                    </FormControl>
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"

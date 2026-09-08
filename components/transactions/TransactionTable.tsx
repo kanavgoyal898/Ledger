@@ -64,8 +64,8 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
 
   return (
     <>
-      <div className="rounded-md border">
-        <Table>
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table className="w-full">
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
@@ -126,11 +126,13 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon" className="h-8 w-8" />
+                      }
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Open menu</span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => onEdit(transaction)}>

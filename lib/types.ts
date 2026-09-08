@@ -33,6 +33,34 @@ export interface Settings {
   accounts?: AccountItem[];
 }
 
+export type TokenReset = "1_day" | "1_week" | "1_month" | "1_year" | "never";
+
+export interface User {
+  _id: string;
+  _type: "user";
+  firstName: string;
+  lastName?: string;
+  username: string;
+  profilePicture?: string;
+  mobileNumber?: string;
+  email?: string;
+  passcode: string;
+  tokenReset: TokenReset;
+}
+
+/** Converts a tokenReset value to cookie maxAge in seconds. Returns undefined for "never". */
+export function tokenResetToDays(tokenReset: TokenReset): number | undefined {
+  switch (tokenReset) {
+    case "1_day":   return 60 * 60 * 24;
+    case "1_week":  return 60 * 60 * 24 * 7;
+    case "1_month": return 60 * 60 * 24 * 30;
+    case "1_year":  return 60 * 60 * 24 * 365;
+    case "never":   return undefined;
+  }
+}
+
+export const tokenResetToSeconds = tokenResetToDays;
+
 export interface Transaction {
   _id: string;
   _type: "transaction";
@@ -152,6 +180,23 @@ export const SETTINGS_QUERY = `
     }
   }
 `;
+
+export const USER_QUERY = `
+  *[_type == "user" && username == $username][0] {
+    _id,
+    _type,
+    firstName,
+    lastName,
+    username,
+    "profilePicture": profilePicture.asset->url,
+    mobileNumber,
+    email,
+    passcode,
+    tokenReset
+  }
+`;
+
+export const USER_BY_USERNAME_QUERY = USER_QUERY;
 
 // ---------------------------------------------------------------------------
 // Utility: format currency

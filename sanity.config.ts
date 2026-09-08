@@ -20,6 +20,9 @@ export default defineConfig({
             S.listItem()
               .title("Transactions")
               .child(S.documentTypeList("transaction")),
+            S.listItem()
+              .title("Users")
+              .child(S.documentTypeList("user")),
             // Settings as a singleton
             S.listItem()
               .title("Settings")
