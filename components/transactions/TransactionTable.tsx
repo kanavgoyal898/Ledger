@@ -72,6 +72,289 @@ export function nextTransactionSort(
   return { key: nextKey, direction: nextKey === "date" || nextKey === "amount" ? "desc" : "asc" };
 }
 
+interface DateGroup {
+  dateKey: string;
+  label: string;
+  net: number;
+  transactions: Transaction[];
+}
+
+function groupTransactionsByDate(transactions: Transaction[]): DateGroup[] {
+  const groups: DateGroup[] = [];
+  const byKey = new Map<string, DateGroup>();
+
+  for (const transaction of transactions) {
+    const dateKey = transaction.date.slice(0, 10);
+    let group = byKey.get(dateKey);
+    if (!group) {
+      group = {
+        dateKey,
+        label: format(new Date(transaction.date), "EEEE, d MMM yyyy"),
+        net: 0,
+        transactions: [],
+      };
+      byKey.set(dateKey, group);
+      groups.push(group);
+    }
+    group.transactions.push(transaction);
+    group.net += transaction.type === "income" ? transaction.amount : -transaction.amount;
+  }
+
+  return groups;
+}
+
+function DateGroupHeading({ group }: { group: DateGroup }) {
+  return (
+    <div className="flex items-center justify-between gap-2 px-1">
+      <p className="text-xs font-semibold text-muted-foreground">{group.label}</p>
+      <p className={`font-mono text-xs font-medium ${group.net >= 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
+        {group.net >= 0 ? "+" : "-"}
+        {formatINR(Math.abs(group.net))}
+      </p>
+    </div>
+  );
+}
+
+function TransactionMobileCard({
+  transaction,
+  onEdit,
+  onDeleteRequest,
+}: {
+  transaction: Transaction;
+  onEdit: (transaction: Transaction) => void;
+  onDeleteRequest: (id: string) => void;
+}) {
+  return (
+    <div className="rounded-md border p-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-medium">{transaction.heading || "—"}</p>
+          <p className="text-xs text-muted-foreground">{format(new Date(transaction.date), "dd MMM yyyy")}</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className={`font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
+            {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount)}
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Open Menu</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(transaction)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => onDeleteRequest(transaction._id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""}>
+          {transaction.type === "income" ? "Income" : "Expense"}
+        </Badge>
+        <Badge variant="secondary">
+          <NameColor name={transaction.category} />
+          {transaction.category}
+        </Badge>
+        {transaction.subCategory && (
+          <Badge variant="outline" className="text-xs">
+            <NameColor name={transaction.subCategory} />
+            {transaction.subCategory}
+          </Badge>
+        )}
+      </div>
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        <Badge variant="outline">
+          <NameColor name={transaction.account} />
+          {transaction.account}
+        </Badge>
+        {transaction.subAccount && (
+          <Badge variant="secondary" className="text-xs">
+            <NameColor name={transaction.subAccount} />
+            {transaction.subAccount}
+          </Badge>
+        )}
+      </div>
+      {transaction.description && (
+        <p className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-muted-foreground">
+          {transaction.description}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TransactionTabletRow({
+  transaction,
+  onEdit,
+  onDeleteRequest,
+}: {
+  transaction: Transaction;
+  onEdit: (transaction: Transaction) => void;
+  onDeleteRequest: (id: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md border p-2">
+      <div className="text-xs text-muted-foreground">
+        {format(new Date(transaction.date), "dd MMM yyyy")}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{transaction.heading || "—"}</p>
+        {transaction.description && (
+          <p className="truncate text-xs text-muted-foreground">{transaction.description}</p>
+        )}
+      </div>
+      <div className="flex min-w-0 flex-wrap gap-1">
+        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""}>
+          {transaction.type === "income" ? "Income" : "Expense"}
+        </Badge>
+        <Badge variant="secondary" className="max-w-full truncate">
+          <NameColor name={transaction.category} />
+          {transaction.category}
+        </Badge>
+        {transaction.subCategory && (
+          <Badge variant="outline" className="max-w-full truncate text-xs">
+            <NameColor name={transaction.subCategory} />
+            {transaction.subCategory}
+          </Badge>
+        )}
+        <Badge variant="outline" className="max-w-full truncate">
+          <NameColor name={transaction.account} />
+          {transaction.account}
+        </Badge>
+        {transaction.subAccount && (
+          <Badge variant="secondary" className="max-w-full truncate text-xs">
+            <NameColor name={transaction.subAccount} />
+            {transaction.subAccount}
+          </Badge>
+        )}
+      </div>
+      <div className={`whitespace-nowrap text-right font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
+        {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount)}
+      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+          <span className="sr-only">Open Menu</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onEdit(transaction)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => onDeleteRequest(transaction._id)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+function TransactionDesktopRow({
+  transaction,
+  onEdit,
+  onDeleteRequest,
+}: {
+  transaction: Transaction;
+  onEdit: (transaction: Transaction) => void;
+  onDeleteRequest: (id: string) => void;
+}) {
+  return (
+    <TableRow>
+      <TableCell className="whitespace-nowrap text-sm">
+        {format(new Date(transaction.date), "dd MMM yyyy")}
+      </TableCell>
+      <TableCell className="max-w-40 whitespace-normal wrap-break-word">
+        <div className="whitespace-normal wrap-break-word font-medium">{transaction.heading || "—"}</div>
+        {transaction.description && (
+          <div className="whitespace-normal wrap-break-word text-xs text-muted-foreground">
+            {transaction.description}
+          </div>
+        )}
+      </TableCell>
+      <TableCell>
+        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}>
+          {transaction.type === "income" ? "Income" : "Expense"}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col gap-1">
+          <Badge variant="secondary" className="w-fit">
+            <NameColor name={transaction.category} />
+            {transaction.category}
+          </Badge>
+          {transaction.subCategory && (
+            <Badge variant="outline" className="w-fit text-xs">
+              <NameColor name={transaction.subCategory} />
+              {transaction.subCategory}
+            </Badge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col gap-1">
+          <Badge variant="outline" className="w-fit">
+            <NameColor name={transaction.account} />
+            {transaction.account}
+          </Badge>
+          {transaction.subAccount && (
+            <Badge variant="secondary" className="w-fit text-xs">
+              <NameColor name={transaction.subAccount} />
+              {transaction.subAccount}
+            </Badge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className={`text-right font-mono font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
+        {transaction.type === "income" ? "+" : "-"}
+        {formatINR(transaction.amount)}
+      </TableCell>
+      <TableCell>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon" className="h-8 w-8" />
+            }
+          >
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">Open Menu</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(transaction)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => onDeleteRequest(transaction._id)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export function TransactionTable({
   transactions,
   onEdit,
@@ -93,6 +376,12 @@ export function TransactionTable({
   }), [sortKey, sortDirection, transactions]);
   const totalPages = Math.max(1, Math.ceil(sortedTransactions.length / Number(pageSize)));
   const pageTransactions = sortedTransactions.slice((page - 1) * Number(pageSize), page * Number(pageSize));
+
+  const isGroupedByDate = sortKey === "date";
+  const pageGroups = useMemo(
+    () => (isGroupedByDate ? groupTransactionsByDate(pageTransactions) : []),
+    [isGroupedByDate, pageTransactions],
+  );
 
   useEffect(() => setPage(1), [transactions, pageSize, sortKey, sortDirection]);
 
@@ -127,142 +416,71 @@ export function TransactionTable({
 
   return (
     <>
-      <div className="space-y-2 md:hidden">
-        {pageTransactions.map((transaction) => (
-          <div key={transaction._id} className="rounded-md border p-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{transaction.heading || "—"}</p>
-                <p className="text-xs text-muted-foreground">{format(new Date(transaction.date), "dd MMM yyyy")}</p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <span className={`font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
-                  {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount)}
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                    <span className="sr-only">Open Menu</span>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onEdit(transaction)}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => setDeletingId(transaction._id)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+      {/* Mobile */}
+      <div className="space-y-4 md:hidden">
+        {isGroupedByDate ? (
+          pageGroups.map((group) => (
+            <div key={group.dateKey} className="space-y-2">
+              <DateGroupHeading group={group} />
+              <div className="space-y-2">
+                {group.transactions.map((transaction) => (
+                  <TransactionMobileCard
+                    key={transaction._id}
+                    transaction={transaction}
+                    onEdit={onEdit}
+                    onDeleteRequest={setDeletingId}
+                  />
+                ))}
               </div>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""}>
-                {transaction.type === "income" ? "Income" : "Expense"}
-              </Badge>
-              <Badge variant="secondary">
-                <NameColor name={transaction.category} />
-                {transaction.category}
-              </Badge>
-              {transaction.subCategory && (
-                <Badge variant="outline" className="text-xs">
-                  <NameColor name={transaction.subCategory} />
-                  {transaction.subCategory}
-                </Badge>
-              )}
-            </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <Badge variant="outline">
-                <NameColor name={transaction.account} />
-                {transaction.account}
-              </Badge>
-              {transaction.subAccount && (
-                <Badge variant="secondary" className="text-xs">
-                  <NameColor name={transaction.subAccount} />
-                  {transaction.subAccount}
-                </Badge>
-              )}
-            </div>
-            {transaction.description && (
-              <p className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-muted-foreground">
-                {transaction.description}
-              </p>
-            )}
+          ))
+        ) : (
+          <div className="space-y-2">
+            {pageTransactions.map((transaction) => (
+              <TransactionMobileCard
+                key={transaction._id}
+                transaction={transaction}
+                onEdit={onEdit}
+                onDeleteRequest={setDeletingId}
+              />
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      <div className="hidden space-y-1.5 md:block lg:hidden">
-        {pageTransactions.map((transaction) => (
-          <div key={transaction._id} className="grid grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md border p-2">
-            <div className="text-xs text-muted-foreground">
-              {format(new Date(transaction.date), "dd MMM yyyy")}
+      {/* Tablet */}
+      <div className="hidden space-y-3 md:block lg:hidden">
+        {isGroupedByDate ? (
+          pageGroups.map((group) => (
+            <div key={group.dateKey} className="space-y-1.5">
+              <DateGroupHeading group={group} />
+              <div className="space-y-1.5">
+                {group.transactions.map((transaction) => (
+                  <TransactionTabletRow
+                    key={transaction._id}
+                    transaction={transaction}
+                    onEdit={onEdit}
+                    onDeleteRequest={setDeletingId}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{transaction.heading || "—"}</p>
-              {transaction.description && (
-                <p className="truncate text-xs text-muted-foreground">{transaction.description}</p>
-              )}
-            </div>
-            <div className="flex min-w-0 flex-wrap gap-1">
-              <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""}>
-                {transaction.type === "income" ? "Income" : "Expense"}
-              </Badge>
-              <Badge variant="secondary" className="max-w-full truncate">
-                <NameColor name={transaction.category} />
-                {transaction.category}
-              </Badge>
-              {transaction.subCategory && (
-                <Badge variant="outline" className="max-w-full truncate text-xs">
-                  <NameColor name={transaction.subCategory} />
-                  {transaction.subCategory}
-                </Badge>
-              )}
-              <Badge variant="outline" className="max-w-full truncate">
-                <NameColor name={transaction.account} />
-                {transaction.account}
-              </Badge>
-              {transaction.subAccount && (
-                <Badge variant="secondary" className="max-w-full truncate text-xs">
-                  <NameColor name={transaction.subAccount} />
-                  {transaction.subAccount}
-                </Badge>
-              )}
-            </div>
-            <div className={`whitespace-nowrap text-right font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
-              {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount)}
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Open Menu</span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEdit(transaction)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => setDeletingId(transaction._id)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          ))
+        ) : (
+          <div className="space-y-1.5">
+            {pageTransactions.map((transaction) => (
+              <TransactionTabletRow
+                key={transaction._id}
+                transaction={transaction}
+                onEdit={onEdit}
+                onDeleteRequest={setDeletingId}
+              />
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
+      {/* Desktop */}
       <div className="hidden w-full overflow-x-auto rounded-md border lg:block">
         <Table className="w-full">
           <TableHeader>
@@ -277,83 +495,18 @@ export function TransactionTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pageTransactions.map((transaction) => (
-              <TableRow key={transaction._id}>
-                <TableCell className="whitespace-nowrap text-sm">
-                  {format(new Date(transaction.date), "dd MMM yyyy")}
-                </TableCell>
-                <TableCell className="max-w-40 whitespace-normal wrap-break-word">
-                  <div className="whitespace-normal wrap-break-word font-medium">{transaction.heading || "—"}</div>
-                  {transaction.description && (
-                    <div className="whitespace-normal wrap-break-word text-xs text-muted-foreground">
-                      {transaction.description}
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}>
-                    {transaction.type === "income" ? "Income" : "Expense"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <Badge variant="secondary" className="w-fit">
-                      <NameColor name={transaction.category} />
-                      {transaction.category}
-                    </Badge>
-                    {transaction.subCategory && (
-                      <Badge variant="outline" className="w-fit text-xs">
-                        <NameColor name={transaction.subCategory} />
-                        {transaction.subCategory}
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <Badge variant="outline" className="w-fit">
-                      <NameColor name={transaction.account} />
-                      {transaction.account}
-                    </Badge>
-                    {transaction.subAccount && (
-                      <Badge variant="secondary" className="w-fit text-xs">
-                        <NameColor name={transaction.subAccount} />
-                        {transaction.subAccount}
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className={`text-right font-mono font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
-                  {transaction.type === "income" ? "+" : "-"}
-                  {formatINR(transaction.amount)}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button variant="ghost" size="icon" className="h-8 w-8" />
-                      }
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open Menu</span>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(transaction)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => setDeletingId(transaction._id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+            {isGroupedByDate
+              ? pageGroups.map((group) => (
+                  <FragmentGroup key={group.dateKey} group={group} onEdit={onEdit} onDeleteRequest={setDeletingId} />
+                ))
+              : pageTransactions.map((transaction) => (
+                  <TransactionDesktopRow
+                    key={transaction._id}
+                    transaction={transaction}
+                    onEdit={onEdit}
+                    onDeleteRequest={setDeletingId}
+                  />
+                ))}
           </TableBody>
         </Table>
       </div>
@@ -396,6 +549,41 @@ export function TransactionTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </>
+  );
+}
+
+function FragmentGroup({
+  group,
+  onEdit,
+  onDeleteRequest,
+}: {
+  group: DateGroup;
+  onEdit: (transaction: Transaction) => void;
+  onDeleteRequest: (id: string) => void;
+}) {
+  return (
+    <>
+      <TableRow className="bg-muted/40 hover:bg-muted/40">
+        <TableCell colSpan={5} className="py-1.5 text-xs font-semibold text-muted-foreground">
+          {group.label}
+        </TableCell>
+        <TableCell colSpan={1} className={`py-1.5 text-right font-mono text-xs font-medium ${group.net >= 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
+          {group.net >= 0 ? "+" : "-"}
+          {formatINR(Math.abs(group.net))}
+        </TableCell>
+        <TableCell colSpan={1} className={`py-1.5 text-right font-mono text-xs font-medium ${group.net >= 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
+          
+        </TableCell>
+      </TableRow>
+      {group.transactions.map((transaction) => (
+        <TransactionDesktopRow
+          key={transaction._id}
+          transaction={transaction}
+          onEdit={onEdit}
+          onDeleteRequest={onDeleteRequest}
+        />
+      ))}
     </>
   );
 }
