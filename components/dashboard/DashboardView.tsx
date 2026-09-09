@@ -90,27 +90,18 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
         )}
       </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <Card className="min-w-0">
-          <CardHeader className="gap-2 pb-2">
-            <CardDescription>Total Income</CardDescription>
-            <CardTitle className="truncate text-xl text-emerald-600 dark:text-emerald-400 sm:text-2xl">{formatINR(totalIncome)}</CardTitle>
+          <CardHeader className="gap-1">
+            <CardTitle className="truncate text-xl text-center text-emerald-600 dark:text-emerald-400 sm:text-2xl">{formatINR(totalIncome)}</CardTitle>
+            <CardDescription className="text-center text-xs">Total Income</CardDescription>
           </CardHeader>
-          <CardContent><p className="text-xs text-muted-foreground">{timelineLabels[timeline]}</p></CardContent>
         </Card>
         <Card className="min-w-0">
-          <CardHeader className="gap-2 pb-2">
-            <CardDescription>Total Expenditure</CardDescription>
-            <CardTitle className="truncate text-xl text-rose-600 dark:text-rose-400 sm:text-2xl">{formatINR(totalExpenditure)}</CardTitle>
+          <CardHeader className="gap-1">
+            <CardTitle className="truncate text-xl text-center text-rose-600 dark:text-rose-400 sm:text-2xl">{formatINR(totalExpenditure)}</CardTitle>
+            <CardDescription className="text-center text-xs">Total Expenditure</CardDescription>
           </CardHeader>
-          <CardContent><p className="text-xs text-muted-foreground">{timelineLabels[timeline]}</p></CardContent>
-        </Card>
-        <Card className="hidden min-w-0 lg:block lg:col-span-1">
-          <CardHeader className="gap-2 pb-2">
-            <CardDescription>Transaction Count</CardDescription>
-            <CardTitle className="text-xl sm:text-2xl">{visibleTransactions.length}</CardTitle>
-          </CardHeader>
-          <CardContent><p className="text-xs text-muted-foreground">{timelineLabels[timeline]}</p></CardContent>
         </Card>
       </div>
       <DashboardCharts transactions={transactions} range={range} />
