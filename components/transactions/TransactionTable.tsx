@@ -145,7 +145,7 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
           <div key={transaction._id} className="rounded-md border p-2">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate font-medium">{transaction.heading || "Untitled transaction"}</p>
+                <p className="truncate font-medium">{transaction.heading || "—"}</p>
                 <p className="text-xs text-muted-foreground">{format(new Date(transaction.date), "dd MMM yyyy")}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
@@ -218,7 +218,7 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
               {format(new Date(transaction.date), "dd MMM yyyy")}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{transaction.heading || "Untitled transaction"}</p>
+              <p className="truncate text-sm font-medium">{transaction.heading || "—"}</p>
               {transaction.description && (
                 <p className="truncate text-xs text-muted-foreground">{transaction.description}</p>
               )}

@@ -138,3 +138,27 @@
     display: none;
   }
 }
+
+@layer base {
+  /* Prevent iOS Safari from auto-zooming on date inputs */
+  @media (max-width: 768px) {
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="time"] {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Fix vertical centering, height truncation, and iOS WebKit styling */
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 2.5rem;
+  }
+
+  /* Correct alignment for the internal text value on iOS WebKit */
+  input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.5em;
+  }
+}

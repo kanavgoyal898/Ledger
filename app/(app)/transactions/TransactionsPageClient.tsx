@@ -2,7 +2,7 @@
 
 import type { Metadata } from "next";
 import { useState, useEffect, useCallback, useMemo, Suspense, type ReactNode } from "react";
-import { Download, FileText, Search, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
 
@@ -109,6 +109,7 @@ function TransactionsPageContent() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [username, setUsername] = useState("username");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -265,74 +266,96 @@ function TransactionsPageContent() {
       </div>
 
       {/* Filters */}
-      {hasFilters && (
-        <Button variant="ghost" onClick={clearFilters} className="self-end">
-          <X className="h-4 w-4" />
-          Clear all filters
-        </Button>
-      )}
       <div className="flex flex-col gap-3 rounded-md border p-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          <div className="relative sm:col-span-3">
-            <label htmlFor="search-input" className="mb-1.5 block text-sm font-medium">Search</label>
-            <Search className="absolute left-2.5 top-9 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search-input"
-              placeholder="Search Transactions…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((open) => !open)}
+          className="flex items-center justify-between gap-2"
+          aria-expanded={filtersOpen}
+          aria-controls="transaction-filters-panel"
+        >
+          <span className="flex items-center gap-2 text-sm font-medium">
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+            {hasFilters && (
+              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
+                Active
+              </span>
+            )}
+          </span>
+          {filtersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
 
-          <div>
-            <FilterSelect
-              id="filter-type"
-              label="Transaction Type"
-              value={filterType}
-              onValueChange={setFilterType}
-              valueLabels={{ income: "Income", expense: "Expense" }}
-            >
+        {filtersOpen && (
+          <div id="transaction-filters-panel" className="flex flex-col gap-3">
+            {hasFilters && (
+              <Button variant="ghost" onClick={clearFilters} className="self-end">
+                <X className="h-4 w-4" />
+                Clear all filters
+              </Button>
+            )}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="relative sm:col-span-3">
+                <label htmlFor="search-input" className="mb-1.5 block text-sm font-medium">Search</label>
+                <Search className="absolute left-2.5 top-9 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search-input"
+                  placeholder="Search Transactions…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+
+              <div>
+                <FilterSelect
+                  id="filter-type"
+                  label="Transaction Type"
+                  value={filterType}
+                  onValueChange={setFilterType}
+                  valueLabels={{ income: "Income", expense: "Expense" }}
+                >
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="income">Income</SelectItem>
+                  <SelectItem value="expense">Expense</SelectItem>
+                </FilterSelect>
+              </div>
+
+              <div className="sm:col-span-2 sm:col-start-1">
+                <DateFilter id="filter-start-date" label="Start date" value={startDate} onChange={setStartDate} />
+              </div>
+              <div className="sm:col-span-2">
+                <DateFilter id="filter-end-date" label="End date" value={endDate} onChange={setEndDate} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <FilterSelect id="filter-category" label="Category" value={filterCategory} onValueChange={(value) => { setFilterCategory(value); setFilterSubCategory("all"); }}>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="income">Income</SelectItem>
-              <SelectItem value="expense">Expense</SelectItem>
-            </FilterSelect>
+              {settings.categories?.filter((category) => !category.deleted).map((category) => (
+                <SelectItem key={category._key} value={category.label}><NameColor name={category.label} />{category.label}</SelectItem>
+              ))}
+              </FilterSelect>
+
+              <FilterSelect id="filter-subcategory" label="Sub-Category" value={filterSubCategory} onValueChange={setFilterSubCategory} disabled={filterCategory === "all"}>
+              <SelectItem value="all">All</SelectItem>
+              {subCategories.map((subCategory) => <SelectItem key={subCategory.label} value={subCategory.label}>{subCategory.label}</SelectItem>)}
+              </FilterSelect>
+
+              <FilterSelect id="filter-account" label="Account" value={filterAccount} onValueChange={(value) => { setFilterAccount(value); setFilterSubAccount("all"); }}>
+              <SelectItem value="all">All</SelectItem>
+              {settings.accounts?.filter((account) => !account.deleted).map((account) => (
+                <SelectItem key={account._key} value={account.label}><NameColor name={account.label} />{account.label}</SelectItem>
+              ))}
+              </FilterSelect>
+
+              <FilterSelect id="filter-subaccount" label="Sub-Account" value={filterSubAccount} onValueChange={setFilterSubAccount} disabled={filterAccount === "all"}>
+              <SelectItem value="all">All</SelectItem>
+              {subAccounts.map((subAccount) => <SelectItem key={subAccount.label} value={subAccount.label}>{subAccount.label}</SelectItem>)}
+              </FilterSelect>
+            </div>
           </div>
-
-          <div className="sm:col-span-2 sm:col-start-1">
-            <DateFilter id="filter-start-date" label="Start date" value={startDate} onChange={setStartDate} />
-          </div>
-          <div className="sm:col-span-2">
-            <DateFilter id="filter-end-date" label="End date" value={endDate} onChange={setEndDate} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <FilterSelect id="filter-category" label="Category" value={filterCategory} onValueChange={(value) => { setFilterCategory(value); setFilterSubCategory("all"); }}>
-          <SelectItem value="all">All</SelectItem>
-          {settings.categories?.filter((category) => !category.deleted).map((category) => (
-            <SelectItem key={category._key} value={category.label}><NameColor name={category.label} />{category.label}</SelectItem>
-          ))}
-          </FilterSelect>
-
-          <FilterSelect id="filter-subcategory" label="Sub-Category" value={filterSubCategory} onValueChange={setFilterSubCategory} disabled={filterCategory === "all"}>
-          <SelectItem value="all">All</SelectItem>
-          {subCategories.map((subCategory) => <SelectItem key={subCategory.label} value={subCategory.label}>{subCategory.label}</SelectItem>)}
-          </FilterSelect>
-
-          <FilterSelect id="filter-account" label="Account" value={filterAccount} onValueChange={(value) => { setFilterAccount(value); setFilterSubAccount("all"); }}>
-          <SelectItem value="all">All</SelectItem>
-          {settings.accounts?.filter((account) => !account.deleted).map((account) => (
-            <SelectItem key={account._key} value={account.label}><NameColor name={account.label} />{account.label}</SelectItem>
-          ))}
-          </FilterSelect>
-
-          <FilterSelect id="filter-subaccount" label="Sub-Account" value={filterSubAccount} onValueChange={setFilterSubAccount} disabled={filterAccount === "all"}>
-          <SelectItem value="all">All</SelectItem>
-          {subAccounts.map((subAccount) => <SelectItem key={subAccount.label} value={subAccount.label}>{subAccount.label}</SelectItem>)}
-          </FilterSelect>
-        </div>
-
+        )}
       </div>
       <div className="flex justify-end">
         <DropdownMenu>
