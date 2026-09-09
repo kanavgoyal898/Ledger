@@ -109,7 +109,7 @@ export function LoginForm() {
             <label className="block text-sm font-medium text-foreground">
               Passcode
             </label>
-            <div className="grid grid-cols-6 gap-0.5 sm:gap-1">
+            <div className="grid grid-cols-6 gap-1.5 sm:gap-2">
               {digits.map((d, i) => (
                 <input
                   key={i}

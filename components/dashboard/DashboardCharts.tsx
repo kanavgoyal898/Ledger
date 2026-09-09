@@ -211,7 +211,7 @@ export function DashboardCharts({ transactions, range }: { transactions: Transac
           const label = type === "expenses" ? "Expense split" : "Income split"
           return (
             <Card key={type} className="min-w-0 flex-1 overflow-visible">
-              <CardHeader className="flex flex-col items-start justify-between gap-3 px-4 md:flex-row md:px-6"><div><CardTitle>{label}</CardTitle><CardDescription>{category ? `${category.label} by sub-category` : "Click a category to expand sub-categories"}</CardDescription></div>{category && <Button className="-ml-2 md:ml-0" variant="ghost" size="sm" onClick={() => setExpandedCategories((current) => ({ ...current, [type]: undefined }))}>All categories</Button>}</CardHeader>
+              <CardHeader className="flex flex-col items-start justify-between gap-3 px-4 md:flex-row md:px-6"><div><CardTitle>{label}</CardTitle><CardDescription>{category ? `${category.label} by sub-category` : "Click a category to expand sub-categories"}</CardDescription></div>{category && <Button className="-ml-2 md:ml-0 hidden" variant="ghost" size="sm" onClick={() => setExpandedCategories((current) => ({ ...current, [type]: undefined }))}>All categories</Button>}</CardHeader>
               <CardContent className="px-0 sm:px-3 md:px-4 lg:px-6">
                 {data.length === 0 ? <p className="flex h-52 items-center justify-center text-sm text-muted-foreground sm:h-60">No {type} data yet.</p> : (
                   <ChartContainer config={chartConfig} className="h-56 w-full sm:h-60">

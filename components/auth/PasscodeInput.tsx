@@ -36,7 +36,7 @@ export function PasscodeInput({ value, onChange, disabled, autoFocus }: Passcode
   };
 
   return (
-    <div className="grid w-full grid-cols-6 gap-0.5 sm:gap-1">
+    <div className="grid w-full grid-cols-6 gap-1.5 sm:gap-2">
       {digits.map((digit, index) => (
         <input
           key={index}
