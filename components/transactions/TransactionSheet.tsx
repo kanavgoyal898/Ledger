@@ -286,14 +286,18 @@ export function TransactionSheet({
                   <FormControl>
                     <Input
                       type="number"
-                      step="0.01"
-                      min="0"
+                      inputMode="decimal"
                       placeholder="0.00"
                       name={field.name}
                       ref={field.ref}
                       value={(field.value ?? "") as number | string}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
+                      onFocus={(e) => {
+                        if (e.target.value === "0") {
+                          e.target.select();
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
