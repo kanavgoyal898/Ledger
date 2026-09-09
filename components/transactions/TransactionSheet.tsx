@@ -226,8 +226,14 @@ export function TransactionSheet({
                     <SelectContent className="w-80 max-w-[calc(100vw-2rem)]">{RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}</SelectContent>
                   </Select>
                 </FormItem>
-                <FormItem><FormLabel>Start Date</FormLabel><Input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></FormItem>
-                <FormItem><FormLabel>End Date</FormLabel><Input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></FormItem>
+                <FormItem className="min-w-0">
+                  <FormLabel>Start Date</FormLabel>
+                  <Input className="w-full min-w-0 max-w-full" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
+                </FormItem>
+                <FormItem className="min-w-0">
+                  <FormLabel>End Date</FormLabel>
+                  <Input className="w-full min-w-0 max-w-full" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
+                </FormItem>
               </div>
             )}
 

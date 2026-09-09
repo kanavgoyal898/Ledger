@@ -41,6 +41,18 @@ interface TransactionTableProps {
   onDelete: (id: string) => Promise<void>;
 }
 
+const sortKeyLabels: Record<
+  "date" | "heading" | "type" | "category" | "account" | "amount",
+  string
+> = {
+  date: "Date",
+  heading: "Heading",
+  type: "Type",
+  category: "Category",
+  account: "Account",
+  amount: "Amount",
+};
+
 export function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -99,29 +111,33 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
 
   return (
     <>
-      <div className="flex items-center justify-end gap-2 lg:hidden">
-        <span className="text-sm text-muted-foreground">Sort by</span>
-        <Select value={sortKey} onValueChange={(value) => value && changeSort(value as typeof sortKey)}>
-          <SelectTrigger className="w-32" aria-label="Sort transactions by">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end" alignItemWithTrigger={false}>
-            <SelectItem value="date">Date</SelectItem>
-            <SelectItem value="heading">Heading</SelectItem>
-            <SelectItem value="type">Type</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
-            <SelectItem value="account">Account</SelectItem>
-            <SelectItem value="amount">Amount</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
-          onClick={() => setSortDirection((direction) => direction === "asc" ? "desc" : "asc")}
-        >
-          {sortDirection === "asc" ? <ArrowUp /> : <ArrowDown />}
-        </Button>
+      <div className="flex flex-col items-end gap-2 lg:hidden">
+        <span className="text-right text-sm text-muted-foreground">Sort by</span>
+        <div className="flex items-center gap-2">
+          <Select value={sortKey} onValueChange={(value) => value && changeSort(value as typeof sortKey)}>
+            <SelectTrigger className="w-32" aria-label="Sort transactions by">
+              <SelectValue>
+                {(selectedValue: typeof sortKey) => sortKeyLabels[selectedValue] ?? selectedValue}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent align="end" alignItemWithTrigger={false}>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="heading">Heading</SelectItem>
+              <SelectItem value="type">Type</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+              <SelectItem value="account">Account</SelectItem>
+              <SelectItem value="amount">Amount</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+            onClick={() => setSortDirection((direction) => direction === "asc" ? "desc" : "asc")}
+          >
+            {sortDirection === "asc" ? <ArrowUp /> : <ArrowDown />}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2 md:hidden">

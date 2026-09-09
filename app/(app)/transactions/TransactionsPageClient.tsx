@@ -286,7 +286,13 @@ function TransactionsPageContent() {
           </div>
 
           <div>
-            <FilterSelect id="filter-type" label="Transaction Type" value={filterType} onValueChange={setFilterType}>
+            <FilterSelect
+              id="filter-type"
+              label="Transaction Type"
+              value={filterType}
+              onValueChange={setFilterType}
+              valueLabels={{ income: "Income", expense: "Expense" }}
+            >
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="income">Income</SelectItem>
               <SelectItem value="expense">Expense</SelectItem>
@@ -370,12 +376,34 @@ function TransactionsPageContent() {
   );
 }
 
-function FilterSelect({ id, label, value, onValueChange, children, disabled = false }: { id: string; label: string; value: string; onValueChange: (value: string) => void; children: ReactNode; disabled?: boolean }) {
+function FilterSelect({
+  id,
+  label,
+  value,
+  onValueChange,
+  children,
+  disabled = false,
+  valueLabels,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  children: ReactNode;
+  disabled?: boolean;
+  valueLabels?: Record<string, string>;
+}) {
   return (
     <div>
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium">{label}</label>
       <Select value={value} onValueChange={(nextValue) => nextValue && onValueChange(nextValue)}>
-        <SelectTrigger id={id} disabled={disabled} className="w-full"><SelectValue>{(selectedValue) => selectedValue === "all" ? "All" : selectedValue}</SelectValue></SelectTrigger>
+        <SelectTrigger id={id} disabled={disabled} className="w-full">
+          <SelectValue>
+            {(selectedValue: string) =>
+              selectedValue === "all" ? "All" : valueLabels?.[selectedValue] ?? selectedValue
+            }
+          </SelectValue>
+        </SelectTrigger>
         <SelectContent align="start" alignItemWithTrigger={false}>{children}</SelectContent>
       </Select>
     </div>
@@ -384,9 +412,15 @@ function FilterSelect({ id, label, value, onValueChange, children, disabled = fa
 
 function DateFilter({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
   return (
-    <div>
+    <div className="min-w-0 w-full">
       <label htmlFor={id} className="mb-1.5 block text-sm font-medium">{label}</label>
-      <Input id={id} type="date" value={value} onChange={(event) => onChange(event.target.value)} />
+      <Input
+        id={id}
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full min-w-0 max-w-full"
+      />
     </div>
   );
 }
