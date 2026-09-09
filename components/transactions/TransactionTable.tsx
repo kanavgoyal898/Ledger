@@ -516,7 +516,7 @@ export function TransactionTable({
         <div className="ml-auto flex items-center gap-2">
           <Select value={pageSize} onValueChange={(value) => value && setPageSize(value)}>
             <SelectTrigger className="w-28" aria-label="Rows per page"><SelectValue /></SelectTrigger>
-            <SelectContent>
+            <SelectContent className="p-1 lg:p-2">
               <SelectItem value="10">10 per page</SelectItem>
               <SelectItem value="25">25 per page</SelectItem>
               <SelectItem value="50">50 per page</SelectItem>

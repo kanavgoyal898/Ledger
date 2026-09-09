@@ -423,7 +423,7 @@ function TransactionsPageContent() {
                 {(selectedValue: TransactionSortKey) => transactionSortKeyLabels[selectedValue] ?? selectedValue}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent align="start" alignItemWithTrigger={false}>
+            <SelectContent align="start" alignItemWithTrigger={false} className="p-1 lg:p-2">
               <SelectItem value="date">Date</SelectItem>
               <SelectItem value="heading">Heading</SelectItem>
               <SelectItem value="type">Type</SelectItem>
@@ -535,7 +535,7 @@ function FilterSelect({
             }
           </SelectValue>
         </SelectTrigger>
-        <SelectContent align="start" alignItemWithTrigger={false}>{children}</SelectContent>
+        <SelectContent align="start" alignItemWithTrigger={false} className="p-1 lg:p-2">{children}</SelectContent>
       </Select>
     </div>
   );

@@ -67,7 +67,7 @@ function RuleCard({ rule, onChanged }: { rule: RecurringTransaction; onChanged: 
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Frequency</label>
-              <Select value={frequency} onValueChange={(value) => setFrequency(value as typeof frequency)}><SelectTrigger className="w-full"><SelectValue placeholder="Select Frequency">{formatRecurrenceFrequency(frequency)}</SelectValue></SelectTrigger><SelectContent className="w-80 max-w-[calc(100vw-2rem)]">{RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}</SelectContent></Select>
+              <Select value={frequency} onValueChange={(value) => setFrequency(value as typeof frequency)}><SelectTrigger className="w-full"><SelectValue placeholder="Select Frequency">{formatRecurrenceFrequency(frequency)}</SelectValue></SelectTrigger><SelectContent className="w-80 max-w-[calc(100vw-2rem)] p-1 lg:p-2">{RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}</SelectContent></Select>
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">End Date</label>

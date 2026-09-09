@@ -16,6 +16,13 @@ import {
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PasscodeInput } from "@/components/auth/PasscodeInput";
 import type { TokenReset } from "@/lib/types";
 
@@ -261,15 +268,23 @@ export function AccountPage() {
             </label>
             <label className="space-y-2 text-sm font-medium">
               Token Reset
-              <select
+              <Select
                 value={draft.tokenReset}
-                onChange={(event) => updateDraft("tokenReset", event.target.value as TokenReset)}
-                className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                onValueChange={(value) => updateDraft("tokenReset", value as TokenReset)}
               >
-                {Object.entries(tokenResetLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue>
+                    {tokenResetLabels[draft.tokenReset] ?? draft.tokenReset}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent align="start" alignItemWithTrigger={false} className="p-1 lg:p-2">
+                  {Object.entries(tokenResetLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </label>
           </div>
 

@@ -73,12 +73,22 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         </div>
         <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-end sm:justify-end">
-        <div className="min-w-0 sm:w-40">
+        <div className="min-w-0 sm:w-40 text-left md:text-right">
           <label className="mb-1.5 block text-xs font-medium text-muted-foreground" htmlFor="dashboard-timeline">Timeline</label>
           <Select value={timeline} onValueChange={(value) => value && setTimeline(value as Timeline)}>
-            <SelectTrigger id="dashboard-timeline" className="w-full" aria-label="Dashboard timeline"><SelectValue>{timelineLabels[timeline]}</SelectValue></SelectTrigger>
-            <SelectContent className="w-48">
-              {(Object.entries(timelineLabels) as [Timeline, string][]).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+            <SelectTrigger
+              id="dashboard-timeline"
+              className="w-full"
+              aria-label="Dashboard timeline"
+            >
+              <SelectValue>{timelineLabels[timeline]}</SelectValue>
+            </SelectTrigger>
+            <SelectContent align="start" alignItemWithTrigger={false} className="p-1 lg:p-2">
+              {(Object.entries(timelineLabels) as [Timeline, string][]).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

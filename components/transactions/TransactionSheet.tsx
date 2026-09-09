@@ -223,7 +223,9 @@ export function TransactionSheet({
                   <FormLabel>Frequency</FormLabel>
                   <Select value={frequency} onValueChange={(value) => setFrequency(value as RecurrenceFrequency)}>
                     <FormControl><SelectTrigger className="w-full"><SelectValue placeholder="Select Frequency">{frequency ? formatRecurrenceFrequency(frequency) : undefined}</SelectValue></SelectTrigger></FormControl>
-                    <SelectContent className="w-80 max-w-[calc(100vw-2rem)]">{RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}</SelectContent>
+                    <SelectContent className="w-80 max-w-[calc(100vw-2rem)] p-1 lg:p-2">
+                      {RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}
+                    </SelectContent>
                   </Select>
                 </FormItem>
                 <FormItem className="min-w-0">
@@ -331,7 +333,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent align="start" alignItemWithTrigger={false}>
+                    <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
                       {settings.categories?.filter(c => !c.deleted || c.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
                         <SelectItem key={c._key} value={c.label}>
                           <NameColor name={c.label} />
@@ -369,7 +371,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent align="start" alignItemWithTrigger={false}>
+                    <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
                       {selectedCategory?.subCategories?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
                           <NameColor name={s.label} />
@@ -409,7 +411,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent align="start" alignItemWithTrigger={false}>
+                    <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
                       {settings.accounts?.filter(a => !a.deleted || a.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((a) => (
                         <SelectItem key={a._key} value={a.label}>
                           <NameColor name={a.label} />
@@ -447,7 +449,7 @@ export function TransactionSheet({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent align="start" alignItemWithTrigger={false}>
+                    <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
                       {selectedAccount?.subAccounts?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
                           <NameColor name={s.label} />
