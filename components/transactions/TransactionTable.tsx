@@ -39,12 +39,20 @@ interface TransactionTableProps {
   transactions: Transaction[];
   onEdit: (transaction: Transaction) => void;
   onDelete: (id: string) => Promise<void>;
+  sortKey: TransactionSortKey;
+  sortDirection: "asc" | "desc";
+  onSortChange: (key: TransactionSortKey) => void;
 }
 
-const sortKeyLabels: Record<
-  "date" | "heading" | "type" | "category" | "account" | "amount",
-  string
-> = {
+export type TransactionSortKey =
+  | "date"
+  | "heading"
+  | "type"
+  | "category"
+  | "account"
+  | "amount";
+
+export const transactionSortKeyLabels: Record<TransactionSortKey, string> = {
   date: "Date",
   heading: "Heading",
   type: "Type",
@@ -53,11 +61,27 @@ const sortKeyLabels: Record<
   amount: "Amount",
 };
 
-export function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
+export function nextTransactionSort(
+  currentKey: TransactionSortKey,
+  currentDirection: "asc" | "desc",
+  nextKey: TransactionSortKey,
+): { key: TransactionSortKey; direction: "asc" | "desc" } {
+  if (currentKey === nextKey) {
+    return { key: currentKey, direction: currentDirection === "asc" ? "desc" : "asc" };
+  }
+  return { key: nextKey, direction: nextKey === "date" || nextKey === "amount" ? "desc" : "asc" };
+}
+
+export function TransactionTable({
+  transactions,
+  onEdit,
+  onDelete,
+  sortKey,
+  sortDirection,
+  onSortChange,
+}: TransactionTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [sortKey, setSortKey] = useState<"date" | "heading" | "type" | "category" | "account" | "amount">("date");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState("10");
 
@@ -72,18 +96,10 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
 
   useEffect(() => setPage(1), [transactions, pageSize, sortKey, sortDirection]);
 
-  function changeSort(nextKey: typeof sortKey) {
-    if (sortKey === nextKey) setSortDirection((direction) => direction === "asc" ? "desc" : "asc");
-    else {
-      setSortKey(nextKey);
-      setSortDirection(nextKey === "date" || nextKey === "amount" ? "desc" : "asc");
-    }
-  }
-
-  function SortButton({ label, column }: { label: string; column: typeof sortKey }) {
+  function SortButton({ label, column }: { label: string; column: TransactionSortKey }) {
     const active = sortKey === column;
     return (
-      <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2" onClick={() => changeSort(column)}>
+      <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2" onClick={() => onSortChange(column)}>
         {label}
         {active ? (sortDirection === "asc" ? <ArrowUp /> : <ArrowDown />) : <ArrowUpDown />}
       </Button>
@@ -111,35 +127,6 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
 
   return (
     <>
-      <div className="flex flex-col items-end gap-2 lg:hidden">
-        <span className="text-right text-sm text-muted-foreground">Sort by</span>
-        <div className="flex items-center gap-2">
-          <Select value={sortKey} onValueChange={(value) => value && changeSort(value as typeof sortKey)}>
-            <SelectTrigger className="w-32" aria-label="Sort transactions by">
-              <SelectValue>
-                {(selectedValue: typeof sortKey) => sortKeyLabels[selectedValue] ?? selectedValue}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="end" alignItemWithTrigger={false}>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="heading">Heading</SelectItem>
-              <SelectItem value="type">Type</SelectItem>
-              <SelectItem value="category">Category</SelectItem>
-              <SelectItem value="account">Account</SelectItem>
-              <SelectItem value="amount">Amount</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
-            onClick={() => setSortDirection((direction) => direction === "asc" ? "desc" : "asc")}
-          >
-            {sortDirection === "asc" ? <ArrowUp /> : <ArrowDown />}
-          </Button>
-        </div>
-      </div>
-
       <div className="space-y-2 md:hidden">
         {pageTransactions.map((transaction) => (
           <div key={transaction._id} className="rounded-md border p-2">

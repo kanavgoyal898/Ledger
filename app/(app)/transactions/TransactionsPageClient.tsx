@@ -2,7 +2,7 @@
 
 import type { Metadata } from "next";
 import { useState, useEffect, useCallback, useMemo, Suspense, type ReactNode } from "react";
-import { ChevronDown, ChevronUp, Download, FileText, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Download, FileText, Search, SlidersHorizontal, X } from "lucide-react";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
 
@@ -21,9 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TransactionTable } from "@/components/transactions/TransactionTable";
 import { TransactionSheet } from "@/components/transactions/TransactionSheet";
 import { RecurringTransactionsSection } from "@/components/transactions/RecurringTransactionsSection";
+import { TransactionTable, type TransactionSortKey, transactionSortKeyLabels, nextTransactionSort } from "@/components/transactions/TransactionTable";
 import { NameColor } from "@/components/ui/name-color";
 import type { Transaction, Settings } from "@/lib/types";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -110,6 +110,20 @@ function TransactionsPageContent() {
   const [endDate, setEndDate] = useState("");
   const [username, setUsername] = useState("username");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Sorting — surfaced on mobile next to the Export button
+  const [sortKey, setSortKey] = useState<TransactionSortKey>("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  function handleSortChange(nextKey: TransactionSortKey) {
+    const next = nextTransactionSort(sortKey, sortDirection, nextKey);
+    setSortKey(next.key);
+    setSortDirection(next.direction);
+  }
+
+  function handleToggleSortDirection() {
+    setSortDirection((direction) => (direction === "asc" ? "desc" : "asc"));
+  }
 
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -259,6 +273,22 @@ function TransactionsPageContent() {
     [settings.accounts, filterAccount],
   );
 
+  const exportMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" disabled={loading} />}>
+        <Download className="h-4 w-4" />
+        Export
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => exportTransactions("csv")}><FileText /> CSV</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => exportTransactions("tsv")}><FileText /> TSV</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => exportTransactions("xls")}><FileText /> Excel 97-2003 (.xls)</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => exportTransactions("xlsx")}><FileText /> Excel (.xlsx)</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => exportTransactions("pdf")}><FileText /> PDF</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <div className="flex flex-col gap-6 mb-16 scrollbar-hide">
       <div>
@@ -357,21 +387,42 @@ function TransactionsPageContent() {
           </div>
         )}
       </div>
-      <div className="flex justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="outline" disabled={loading} />}>
-            <Download className="h-4 w-4" />
-            Export
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => exportTransactions("csv")}><FileText /> CSV</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => exportTransactions("tsv")}><FileText /> TSV</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => exportTransactions("xls")}><FileText /> Excel 97-2003 (.xls)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => exportTransactions("xlsx")}><FileText /> Excel (.xlsx)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => exportTransactions("pdf")}><FileText /> PDF</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+
+      {/* Mobile: Sort by + Export together, flex-row with justify-between */}
+      <div className="flex flex-row items-center justify-between gap-2 lg:hidden">
+        <div className="flex items-center gap-2">
+          <Select value={sortKey} onValueChange={(value) => value && handleSortChange(value as TransactionSortKey)}>
+            <SelectTrigger className="w-32" aria-label="Sort transactions by">
+              <SelectValue>
+                {(selectedValue: TransactionSortKey) => transactionSortKeyLabels[selectedValue] ?? selectedValue}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent align="start" alignItemWithTrigger={false}>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="heading">Heading</SelectItem>
+              <SelectItem value="type">Type</SelectItem>
+              <SelectItem value="category">Category</SelectItem>
+              <SelectItem value="account">Account</SelectItem>
+              <SelectItem value="amount">Amount</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+            onClick={handleToggleSortDirection}
+          >
+            {sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          </Button>
+        </div>
+        {exportMenu}
       </div>
+
+      {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
+      <div className="hidden justify-end lg:flex">
+        {exportMenu}
+      </div>
+
       {/* Table */}
       {loading ? (
         <div className="flex h-48 items-center justify-center">
@@ -382,6 +433,9 @@ function TransactionsPageContent() {
           transactions={transactions}
           onEdit={openEdit}
           onDelete={handleDelete}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+          onSortChange={handleSortChange}
         />
       )}
 

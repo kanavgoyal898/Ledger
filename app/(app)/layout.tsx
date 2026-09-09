@@ -8,7 +8,7 @@ export default function AppLayout({
 }) {
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-screen overflow-hidden w-full max-w-4xl mx-auto bg-background relative">
+      <div className="flex flex-col h-dvh overflow-hidden w-full max-w-4xl mx-auto bg-background relative">
         <header className="flex h-14 shrink-0 items-center px-4 border-b md:h-16 md:px-6">
           <div className="flex items-center gap-2">
             <span className="font-bold tracking-tight text-lg">Ledger</span>

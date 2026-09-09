@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     template: "Ledger - %s",
   },
   description: "A simple personal transaction tracking application.",
+  other: {
+    "format-detection": "email=no, telephone=no",
+  },
 };
 
 export const viewport: Viewport = {
