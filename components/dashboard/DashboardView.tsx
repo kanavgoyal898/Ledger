@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { endOfMonth, endOfYear, format, startOfMonth, startOfYear, subMonths, subYears } from "date-fns"
+import { endOfMonth, endOfWeek, endOfYear, format, startOfMonth, startOfWeek, startOfYear, subMonths, subWeeks, subYears } from "date-fns"
 
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatINR, type Transaction } from "@/lib/types"
 
-type Timeline = "current-month" | "last-month" | "current-year" | "last-year" | "max" | "custom"
+type Timeline = "current-week" | "last-week" | "current-month" | "last-month" | "current-year" | "last-year" | "max" | "custom"
 
 const timelineLabels: Record<Timeline, string> = {
+  "current-week": "This Week",
+  "last-week": "Last Week",
   "current-month": "Current Month",
   "last-month": "Last Month",
   "current-year": "Current Year",
@@ -21,13 +23,19 @@ const timelineLabels: Record<Timeline, string> = {
 }
 
 export function DashboardView({ transactions }: { transactions: Transaction[] }) {
-  const [timeline, setTimeline] = useState<Timeline>("current-month")
+  const [timeline, setTimeline] = useState<Timeline>("current-week")
   const [customStart, setCustomStart] = useState(format(startOfMonth(new Date()), "yyyy-MM-dd"))
   const [customEnd, setCustomEnd] = useState(format(new Date(), "yyyy-MM-dd"))
 
   const range = useMemo(() => {
     const today = new Date()
     switch (timeline) {
+      case "last-week": {
+        const lastWeek = subWeeks(today, 1)
+        return { start: startOfWeek(lastWeek, { weekStartsOn: 1 }), end: endOfWeek(lastWeek, { weekStartsOn: 1 }) }
+      }
+      case "current-month":
+        return { start: startOfMonth(today), end: today }
       case "last-month":
         return { start: startOfMonth(subMonths(today, 1)), end: endOfMonth(subMonths(today, 1)) }
       case "current-year":
@@ -42,7 +50,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
       case "custom":
         return { start: new Date(`${customStart}T00:00:00`), end: new Date(`${customEnd}T23:59:59`) }
       default:
-        return { start: startOfMonth(today), end: today }
+        return { start: startOfWeek(today, { weekStartsOn: 1 }), end: today }
     }
   }, [customEnd, customStart, timeline, transactions])
 

@@ -2,7 +2,7 @@
 
 import type { Metadata } from "next";
 import { useState, useEffect, useCallback, useMemo, Suspense, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Download, FileText, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronUp, Download, FileText, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react";
 import { jsPDF } from "jspdf";
 import * as XLSX from "xlsx";
 
@@ -97,7 +97,6 @@ function TransactionsPageContent() {
     categories: [],
     accounts: [],
   });
-  const [loading, setLoading] = useState(true);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -115,6 +114,9 @@ function TransactionsPageContent() {
   const [sortKey, setSortKey] = useState<TransactionSortKey>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
   function handleSortChange(nextKey: TransactionSortKey) {
     const next = nextTransactionSort(sortKey, sortDirection, nextKey);
     setSortKey(next.key);
@@ -129,8 +131,12 @@ function TransactionsPageContent() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (options?: { silent?: boolean }) => {
+    if (options?.silent) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
@@ -157,9 +163,29 @@ function TransactionsPageContent() {
     } catch (err) {
       console.error("Failed to fetch data:", err);
     } finally {
-      setLoading(false);
+      if (options?.silent) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [search, filterCategory, filterSubCategory, filterAccount, filterSubAccount, filterType, startDate, endDate]);
+
+  function handleRefresh() {
+    fetchData({ silent: true });
+  }
+
+  const refreshButton = (
+    <Button
+      variant="outline"
+      aria-label="Refresh transactions"
+      disabled={loading || refreshing}
+      onClick={handleRefresh}
+    >
+      <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+      <span className="hidden sm:inline">Refresh</span>
+    </Button>
+  );
 
   useEffect(() => {
     fetchData();
@@ -277,7 +303,7 @@ function TransactionsPageContent() {
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="outline" disabled={loading} />}>
         <Download className="h-4 w-4" />
-        Export
+        <span className="hidden sm:inline">Export</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => exportTransactions("csv")}><FileText /> CSV</DropdownMenuItem>
@@ -415,12 +441,40 @@ function TransactionsPageContent() {
             {sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
           </Button>
         </div>
-        {exportMenu}
+        <div className="flex flex-row items-center justify-between gap-2 lg:hidden">
+          <div className="flex items-center gap-2">
+            {/* ...sort select and direction button unchanged... */}
+          </div>
+          <div className="flex items-center gap-2">
+            {refreshButton}
+            {exportMenu}
+          </div>
+        </div>
+
+        {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
+        <div className="hidden justify-end gap-2 lg:flex">
+          {refreshButton}
+          {exportMenu}
+        </div>
       </div>
 
       {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
       <div className="hidden justify-end lg:flex">
-        {exportMenu}
+        <div className="flex flex-row items-center justify-between gap-2 lg:hidden">
+          <div className="flex items-center gap-2">
+            {/* ...sort select and direction button unchanged... */}
+          </div>
+          <div className="flex items-center gap-2">
+            {refreshButton}
+            {exportMenu}
+          </div>
+        </div>
+
+        {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
+        <div className="hidden justify-end gap-2 lg:flex">
+          {refreshButton}
+          {exportMenu}
+        </div>
       </div>
 
       {/* Table */}
