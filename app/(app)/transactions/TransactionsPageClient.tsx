@@ -353,13 +353,13 @@ function TransactionsPageContent() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="relative sm:col-span-3">
                 <label htmlFor="search-input" className="mb-1.5 block text-sm font-medium">Search</label>
-                <Search className="absolute left-2.5 top-9 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-8.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search-input"
-                  placeholder="Search Transactions…"
+                  placeholder="Search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 text-xs sm:text-base"
                 />
               </div>
 
