@@ -24,8 +24,11 @@ export function FloatingDeck() {
         "sm:inset-x-auto sm:left-1/2 sm:w-auto sm:-translate-x-1/2",
       )}
     >
+      {/* Light/Dark Mode Toggle */}
+      <ThemeToggle className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border bg-background/80 text-muted-foreground shadow-lg backdrop-blur-lg transition-colors hover:bg-secondary/50 hover:text-foreground sm:h-10 sm:w-10" />
+
       {/* Navigation pill */}
-      <nav className="flex flex-1 items-center justify-between gap-1 rounded-full bg-background/80 backdrop-blur-lg border shadow-lg p-1 sm:flex-none sm:justify-center">
+      <nav className="flex flex-1 items-center justify-between gap-1 rounded-full border bg-background/80 p-1 shadow-lg backdrop-blur-lg sm:flex-none sm:justify-center">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
 
@@ -37,24 +40,23 @@ export function FloatingDeck() {
                 "flex h-11 flex-1 flex-col items-center justify-center gap-1.5 rounded-full transition-colors sm:h-10 sm:w-auto sm:flex-none sm:flex-row sm:px-4",
                 isActive
                   ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
               )}
               title={item.label}
             >
-              <item.icon className="h-4 w-4 sm:h-4 sm:w-4" />
+              <item.icon className="h-4 w-4" />
               <span className="sr-only sm:not-sr-only sm:text-xs sm:font-medium">
                 {item.label}
               </span>
             </Link>
           );
         })}
-        <ThemeToggle className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground sm:h-10 sm:w-10" />
       </nav>
 
-      {/* Add Transaction FAB — sits to the right of the nav pill */}
+      {/* Add Transaction FAB */}
       <Link
         href="/transactions?new=1"
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-transform hover:scale-105 active:scale-95"
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90 active:scale-95"
         title="Add Transaction"
       >
         <Plus className="h-6 w-6" />
