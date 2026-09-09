@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, List, Settings, Plus, UserCircle } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -47,6 +48,7 @@ export function FloatingDeck() {
             </Link>
           );
         })}
+        <ThemeToggle className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground sm:h-10 sm:w-10" />
       </nav>
 
       {/* Add Transaction FAB — sits to the right of the nav pill */}

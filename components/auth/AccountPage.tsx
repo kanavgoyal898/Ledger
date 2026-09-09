@@ -374,7 +374,7 @@ export function AccountPage() {
 
           <div className="flex flex-wrap items-center justify-end gap-3">
             {resetError && <p className="mr-auto text-sm text-destructive" role="alert">{resetError}</p>}
-            {resetSuccess && <p className="mr-auto text-sm text-emerald-600" role="status">{resetSuccess}</p>}
+            {resetSuccess && <p className="mr-auto text-sm text-emerald-600 dark:text-emerald-400" role="status">{resetSuccess}</p>}
             <button
               type="submit"
               disabled={resetSaving}
