@@ -73,32 +73,78 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         </div>
         <div className="grid gap-3 sm:flex sm:flex-wrap sm:items-end sm:justify-end">
-        <div className="min-w-0 sm:w-40 text-left md:text-right">
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground" htmlFor="dashboard-timeline">Timeline</label>
-          <Select value={timeline} onValueChange={(value) => value && setTimeline(value as Timeline)}>
-            <SelectTrigger
-              id="dashboard-timeline"
-              className="w-full"
-              aria-label="Dashboard timeline"
+          <div className="min-w-0 sm:w-40">
+            <label
+              className="mb-1.5 block text-xs font-medium text-muted-foreground"
+              htmlFor="dashboard-timeline"
             >
-              <SelectValue>{timelineLabels[timeline]}</SelectValue>
-            </SelectTrigger>
-            <SelectContent align="start" alignItemWithTrigger={false} className="p-1 lg:p-2">
-              {(Object.entries(timelineLabels) as [Timeline, string][]).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {timeline === "custom" && (
-          <div className="grid grid-cols-2 gap-2">
-            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground" htmlFor="dashboard-start">From</label><Input id="dashboard-start" className="w-full" type="date" value={customStart} onChange={(event) => setCustomStart(event.target.value)} /></div>
-            <div><label className="mb-1.5 block text-xs font-medium text-muted-foreground" htmlFor="dashboard-end">To</label><Input id="dashboard-end" className="w-full" type="date" value={customEnd} onChange={(event) => setCustomEnd(event.target.value)} /></div>
+              Timeline
+            </label>
+
+            <Select
+              value={timeline}
+              onValueChange={(value) => value && setTimeline(value as Timeline)}
+            >
+              <SelectTrigger
+                id="dashboard-timeline"
+                className="h-10 w-full"
+                aria-label="Dashboard timeline"
+              >
+                <SelectValue>{timelineLabels[timeline]}</SelectValue>
+              </SelectTrigger>
+
+              <SelectContent
+                align="start"
+                alignItemWithTrigger={false}
+                className="p-1 lg:p-2"
+              >
+                {(Object.entries(timelineLabels) as [Timeline, string][]).map(
+                  ([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  )
+                )}
+              </SelectContent>
+            </Select>
           </div>
-        )}
-      </div>
+
+          {timeline === "custom" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="min-w-0">
+                <label
+                  className="mb-1.5 block text-xs text-muted-foreground"
+                  htmlFor="dashboard-start"
+                >
+                  Start Date
+                </label>
+                <Input
+                  id="dashboard-start"
+                  type="date"
+                  value={customStart}
+                  onChange={(event) => setCustomStart(event.target.value)}
+                  className="w-full min-w-0"
+                />
+              </div>
+
+              <div className="min-w-0">
+                <label
+                  className="mb-1.5 block text-xs text-muted-foreground"
+                  htmlFor="dashboard-end"
+                >
+                  End Date
+                </label>
+                <Input
+                  id="dashboard-end"
+                  type="date"
+                  value={customEnd}
+                  onChange={(event) => setCustomEnd(event.target.value)}
+                  className="text-xs w-full min-w-0"
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <Card className="min-w-0">
