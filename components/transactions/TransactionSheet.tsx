@@ -471,7 +471,7 @@ export function TransactionSheet({
                 <FormItem>
                   <FormLabel>Heading</FormLabel>
                   <FormControl>
-                    <Input placeholder="Short Title (Optional)" className="text-xs" {...field} />
+                    <Input placeholder="Short Title (Optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
