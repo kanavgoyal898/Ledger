@@ -192,6 +192,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addCategory()}
+            className="text-sm"
           />
           <Textarea
             placeholder="Description (Optional)"

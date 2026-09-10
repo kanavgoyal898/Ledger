@@ -192,6 +192,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addAccount()}
+            className="text-sm"
           />
           <Textarea
             placeholder="Description (Optional)"
