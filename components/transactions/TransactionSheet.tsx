@@ -239,7 +239,7 @@ export function TransactionSheet({
               </div>
             )}
 
-            {!isEditing && repeat === "none" && (
+            {(isEditing || repeat === "none") && (
             <FormField
               control={form.control}
               name="date"
