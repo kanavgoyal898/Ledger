@@ -141,7 +141,7 @@ function TransactionMobileCard({
     <div className="rounded-md border p-2">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-medium">{transaction.heading || "—"}</p>
+          <p className="truncate font-medium text-wrap">{transaction.heading || "—"}</p>
           <p className="text-xs text-muted-foreground">{transactionDateDisplay(transaction.date)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -199,7 +199,7 @@ function TransactionMobileCard({
         )}
       </div>
       {transaction.description && (
-        <p className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-muted-foreground">
+        <p className="mt-2 whitespace-pre-wrap wrap-break-word text-xs text-muted-foreground text-wrap">
           {transaction.description}
         </p>
       )}
@@ -222,9 +222,9 @@ function TransactionTabletRow({
         {transactionDateDisplay(transaction.date)}
       </div>
       <div className="min-w-0">
-        <p className="truncate text-sm font-medium">{transaction.heading || "—"}</p>
+        <p className="truncate text-sm font-medium text-wrap">{transaction.heading || "—"}</p>
         {transaction.description && (
-          <p className="truncate text-xs text-muted-foreground">{transaction.description}</p>
+          <p className="truncate text-xs text-muted-foreground text-wrap">{transaction.description}</p>
         )}
       </div>
       <div className="flex min-w-0 flex-wrap gap-1">
@@ -295,9 +295,9 @@ function TransactionDesktopRow({
         {transactionDateDisplay(transaction.date)}
       </TableCell>
       <TableCell className="max-w-40 whitespace-normal wrap-break-word">
-        <div className="whitespace-normal wrap-break-word font-medium">{transaction.heading || "—"}</div>
+        <div className="whitespace-normal wrap-break-word font-medium text-wrap">{transaction.heading || "—"}</div>
         {transaction.description && (
-          <div className="whitespace-normal wrap-break-word text-xs text-muted-foreground">
+          <div className="whitespace-normal wrap-break-word text-xs text-muted-foreground text-wrap">
             {transaction.description}
           </div>
         )}
