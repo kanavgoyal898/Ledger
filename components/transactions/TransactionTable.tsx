@@ -79,28 +79,41 @@ interface DateGroup {
   transactions: Transaction[];
 }
 
+function transactionDateKey(date: string): string {
+  return format(new Date(date), "yyyy-MM-dd");
+}
+
+function transactionDateLabel(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return format(new Date(year, month - 1, day), "EEEE, d MMM yyyy");
+}
+
+function transactionDateDisplay(date: string): string {
+  return format(new Date(date), "dd MMM yyyy");
+}
+
 function groupTransactionsByDate(transactions: Transaction[]): DateGroup[] {
-  const groups: DateGroup[] = [];
   const byKey = new Map<string, DateGroup>();
 
   for (const transaction of transactions) {
-    const dateKey = transaction.date.slice(0, 10);
+    const dateKey = transactionDateKey(transaction.date);
     let group = byKey.get(dateKey);
+
     if (!group) {
       group = {
         dateKey,
-        label: format(new Date(transaction.date), "EEEE, d MMM yyyy"),
+        label: transactionDateLabel(dateKey),
         net: 0,
         transactions: [],
       };
       byKey.set(dateKey, group);
-      groups.push(group);
     }
+
     group.transactions.push(transaction);
     group.net += transaction.type === "income" ? transaction.amount : -transaction.amount;
   }
 
-  return groups;
+  return Array.from(byKey.values());
 }
 
 function DateGroupHeading({ group }: { group: DateGroup }) {
@@ -129,7 +142,7 @@ function TransactionMobileCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-medium">{transaction.heading || "—"}</p>
-          <p className="text-xs text-muted-foreground">{format(new Date(transaction.date), "dd MMM yyyy")}</p>
+          <p className="text-xs text-muted-foreground">{transactionDateDisplay(transaction.date)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <span className={`font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
@@ -206,7 +219,7 @@ function TransactionTabletRow({
   return (
     <div className="grid grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md border p-2">
       <div className="text-xs text-muted-foreground">
-        {format(new Date(transaction.date), "dd MMM yyyy")}
+        {transactionDateDisplay(transaction.date)}
       </div>
       <div className="min-w-0">
         <p className="truncate text-sm font-medium">{transaction.heading || "—"}</p>
@@ -279,7 +292,7 @@ function TransactionDesktopRow({
   return (
     <TableRow>
       <TableCell className="whitespace-nowrap text-sm">
-        {format(new Date(transaction.date), "dd MMM yyyy")}
+        {transactionDateDisplay(transaction.date)}
       </TableCell>
       <TableCell className="max-w-40 whitespace-normal wrap-break-word">
         <div className="whitespace-normal wrap-break-word font-medium">{transaction.heading || "—"}</div>
@@ -374,14 +387,70 @@ export function TransactionTable({
     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     return sortDirection === "asc" ? comparison : -comparison;
   }), [sortKey, sortDirection, transactions]);
-  const totalPages = Math.max(1, Math.ceil(sortedTransactions.length / Number(pageSize)));
-  const pageTransactions = sortedTransactions.slice((page - 1) * Number(pageSize), page * Number(pageSize));
-
   const isGroupedByDate = sortKey === "date";
-  const pageGroups = useMemo(
-    () => (isGroupedByDate ? groupTransactionsByDate(pageTransactions) : []),
-    [isGroupedByDate, pageTransactions],
+  const dateGroups = useMemo(
+    () => (isGroupedByDate ? groupTransactionsByDate(sortedTransactions) : []),
+    [isGroupedByDate, sortedTransactions],
   );
+
+  const groupedPages = useMemo(() => {
+    if (!isGroupedByDate) return [];
+
+    const pages: DateGroup[][] = [];
+    let currentPage: DateGroup[] = [];
+    let currentTransactionCount = 0;
+    const requestedPageSize = Number(pageSize);
+
+    for (const group of dateGroups) {
+      const groupSize = group.transactions.length;
+
+      if (
+        currentPage.length > 0 &&
+        currentTransactionCount + groupSize > requestedPageSize
+      ) {
+        pages.push(currentPage);
+        currentPage = [];
+        currentTransactionCount = 0;
+      }
+
+      currentPage.push(group);
+      currentTransactionCount += groupSize;
+    }
+
+    if (currentPage.length > 0) pages.push(currentPage);
+
+    return pages;
+  }, [dateGroups, isGroupedByDate, pageSize]);
+
+  const totalPages = isGroupedByDate
+    ? Math.max(1, groupedPages.length)
+    : Math.max(1, Math.ceil(sortedTransactions.length / Number(pageSize)));
+
+  const pageTransactions = isGroupedByDate
+    ? []
+    : sortedTransactions.slice((page - 1) * Number(pageSize), page * Number(pageSize));
+
+  const pageGroups = isGroupedByDate ? groupedPages[page - 1] ?? [] : [];
+
+  const pageTransactionCount = isGroupedByDate
+    ? pageGroups.reduce((count, group) => count + group.transactions.length, 0)
+    : pageTransactions.length;
+
+  const pageStartIndex = isGroupedByDate
+    ? sortedTransactions.findIndex(
+        (transaction) => transaction._id === pageGroups[0]?.transactions[0]?._id,
+      )
+    : (page - 1) * Number(pageSize);
+
+  const pageEndIndex = isGroupedByDate
+    ? sortedTransactions.findIndex(
+        (transaction) =>
+          transaction._id ===
+          pageGroups[pageGroups.length - 1]?.transactions[
+            pageGroups[pageGroups.length - 1].transactions.length - 1
+          ]?._id,
+      )
+    : Math.min(page * Number(pageSize), sortedTransactions.length) - 1;
 
   useEffect(() => setPage(1), [transactions, pageSize, sortKey, sortDirection]);
 
@@ -512,7 +581,11 @@ export function TransactionTable({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-        <p>{sortedTransactions.length === 0 ? "0" : `${(page - 1) * Number(pageSize) + 1}-${Math.min(page * Number(pageSize), sortedTransactions.length)}`} of {sortedTransactions.length} transactions</p>
+        <p>
+          {pageTransactionCount === 0
+            ? "0"
+            : `${pageStartIndex + 1}-${pageEndIndex + 1} of ${sortedTransactions.length} transactions`}
+        </p>
         <div className="ml-auto flex items-center gap-2">
           <Select value={pageSize} onValueChange={(value) => value && setPageSize(value)}>
             <SelectTrigger className="w-28" aria-label="Rows per page"><SelectValue /></SelectTrigger>

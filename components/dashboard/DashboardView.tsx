@@ -13,11 +13,8 @@ type Timeline = "current-week" | "last-week" | "current-month" | "last-month" | 
 
 const timelineLabels: Record<Timeline, string> = {
   "current-week": "This Week",
-  "last-week": "Last Week",
-  "current-month": "Current Month",
-  "last-month": "Last Month",
-  "current-year": "Current Year",
-  "last-year": "Last Year",
+  "current-month": "This Month",
+  "current-year": "This Year",
   max: "All Time",
   custom: "Custom",
 }
@@ -30,18 +27,10 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
   const range = useMemo(() => {
     const today = new Date()
     switch (timeline) {
-      case "last-week": {
-        const lastWeek = subWeeks(today, 1)
-        return { start: startOfWeek(lastWeek, { weekStartsOn: 1 }), end: endOfWeek(lastWeek, { weekStartsOn: 1 }) }
-      }
       case "current-month":
         return { start: startOfMonth(today), end: today }
-      case "last-month":
-        return { start: startOfMonth(subMonths(today, 1)), end: endOfMonth(subMonths(today, 1)) }
       case "current-year":
         return { start: startOfYear(today), end: today }
-      case "last-year":
-        return { start: startOfYear(subYears(today, 1)), end: endOfYear(subYears(today, 1)) }
       case "max":
         return { start: transactions.reduce((earliest, transaction) => {
           const date = new Date(transaction.date)
