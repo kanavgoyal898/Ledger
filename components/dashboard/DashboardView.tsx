@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatINR, type Transaction } from "@/lib/types"
 
-type Timeline = "current-week" | "last-week" | "current-month" | "last-month" | "current-year" | "last-year" | "max" | "custom"
+type Timeline = "current-week" | "current-month" | "current-year" | "max" | "custom"
 
 const timelineLabels: Record<Timeline, string> = {
   "current-week": "This Week",
