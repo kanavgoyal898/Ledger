@@ -290,13 +290,15 @@ function TransactionsPageContent() {
   const subCategories = useMemo(
     () => settings.categories
       ?.filter((category) => filterCategory === "all" || category.label === filterCategory)
-      .flatMap((category) => category.subCategories?.filter((subCategory) => !subCategory.deleted) ?? []) ?? [],
+      .flatMap((category) => category.subCategories?.filter((subCategory) => !subCategory.deleted) ?? [])
+      .sort((a, b) => a.label.localeCompare(b.label)) ?? [],
     [settings.categories, filterCategory],
   );
   const subAccounts = useMemo(
     () => settings.accounts
       ?.filter((account) => filterAccount === "all" || account.label === filterAccount)
-      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? []) ?? [],
+      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? [])
+      .sort((a, b) => a.label.localeCompare(b.label)) ?? [],
     [settings.accounts, filterAccount],
   );
 
@@ -389,7 +391,7 @@ function TransactionsPageContent() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FilterSelect id="filter-category" label="Category" value={filterCategory} onValueChange={(value) => { setFilterCategory(value); setFilterSubCategory("all"); }}>
               <SelectItem value="all">All</SelectItem>
-              {settings.categories?.filter((category) => !category.deleted).map((category) => (
+              {settings.categories?.filter((category) => !category.deleted).sort((a, b) => a.label.localeCompare(b.label)).map((category) => (
                 <SelectItem key={category._key} value={category.label}><NameColor name={category.label} />{category.label}</SelectItem>
               ))}
               </FilterSelect>
@@ -401,7 +403,7 @@ function TransactionsPageContent() {
 
               <FilterSelect id="filter-account" label="Account" value={filterAccount} onValueChange={(value) => { setFilterAccount(value); setFilterSubAccount("all"); }}>
               <SelectItem value="all">All</SelectItem>
-              {settings.accounts?.filter((account) => !account.deleted).map((account) => (
+              {settings.accounts?.filter((account) => !account.deleted).sort((a, b) => a.label.localeCompare(b.label)).map((account) => (
                 <SelectItem key={account._key} value={account.label}><NameColor name={account.label} />{account.label}</SelectItem>
               ))}
               </FilterSelect>

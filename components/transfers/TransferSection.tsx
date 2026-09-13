@@ -220,13 +220,15 @@ export function TransferSection({ settings }: { settings: Settings }) {
   const fromSubAccounts = useMemo(
     () => settings.accounts
       ?.filter((account) => filterFromAccount === "all" || account.label === filterFromAccount)
-      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? []) ?? [],
+      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? [])
+      .sort((a, b) => a.label.localeCompare(b.label)) ?? [],
     [settings.accounts, filterFromAccount],
   );
   const toSubAccounts = useMemo(
     () => settings.accounts
       ?.filter((account) => filterToAccount === "all" || account.label === filterToAccount)
-      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? []) ?? [],
+      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? [])
+      .sort((a, b) => a.label.localeCompare(b.label)) ?? [],
     [settings.accounts, filterToAccount],
   );
 
@@ -323,7 +325,7 @@ export function TransferSection({ settings }: { settings: Settings }) {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FilterSelect id="transfer-filter-from-account" label="From Account" value={filterFromAccount} onValueChange={(value) => { setFilterFromAccount(value); setFilterFromSubAccount("all"); }}>
                 <SelectItem value="all">All</SelectItem>
-                {settings.accounts?.filter((account) => !account.deleted).map((account) => (
+                {settings.accounts?.filter((account) => !account.deleted).sort((a, b) => a.label.localeCompare(b.label)).map((account) => (
                   <SelectItem key={account._key} value={account.label}><NameColor name={account.label} />{account.label}</SelectItem>
                 ))}
               </FilterSelect>
@@ -335,7 +337,7 @@ export function TransferSection({ settings }: { settings: Settings }) {
 
               <FilterSelect id="transfer-filter-to-account" label="To Account" value={filterToAccount} onValueChange={(value) => { setFilterToAccount(value); setFilterToSubAccount("all"); }}>
                 <SelectItem value="all">All</SelectItem>
-                {settings.accounts?.filter((account) => !account.deleted).map((account) => (
+                {settings.accounts?.filter((account) => !account.deleted).sort((a, b) => a.label.localeCompare(b.label)).map((account) => (
                   <SelectItem key={account._key} value={account.label}><NameColor name={account.label} />{account.label}</SelectItem>
                 ))}
               </FilterSelect>

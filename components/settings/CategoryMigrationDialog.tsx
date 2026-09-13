@@ -185,14 +185,16 @@ export function CategoryMigrationDialog({
                   // If the source category is being deleted outright, it can't be a target.
                   if (isWholeCategoryDeletion && c.label === from.category) return false;
                   return true;
-                });
+                })
+                .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 
                 const selectedTargetCategory = categories.find((c) => c.label === group.toCategory);
                 const targetSubCategoryOptions = (selectedTargetCategory?.subCategories ?? []).filter((s) => {
                   if (s.deleted) return false;
                   if (!isWholeCategoryDeletion && group.toCategory === from.category && s.label === group.sourceSubCategory) return false;
                   return true;
-                });
+                })
+                .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 
                 const noop = groupIsNoop(group);
 
