@@ -24,6 +24,7 @@ import {
 import { TransactionSheet } from "@/components/transactions/TransactionSheet";
 import { RecurringTransactionsSection } from "@/components/transactions/RecurringTransactionsSection";
 import { TransactionTable, type TransactionSortKey, transactionSortKeyLabels, nextTransactionSort } from "@/components/transactions/TransactionTable";
+import { TransferSection } from "@/components/transfers/TransferSection";
 import { NameColor } from "@/components/ui/name-color";
 import type { Transaction, Settings } from "@/lib/types";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -494,6 +495,7 @@ function TransactionsPageContent() {
       )}
 
       <RecurringTransactionsSection />
+      <TransferSection settings={settings} />
 
       {/* Create / Edit Sheet */}
       <TransactionSheet

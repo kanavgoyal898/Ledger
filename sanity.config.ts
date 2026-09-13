@@ -23,6 +23,9 @@ export default defineConfig({
             S.listItem()
               .title("Users")
               .child(S.documentTypeList("user")),
+            S.listItem()
+              .title("Transfers")
+              .child(S.documentTypeList("transfer")),
             // Settings as a singleton
             S.listItem()
               .title("Settings")

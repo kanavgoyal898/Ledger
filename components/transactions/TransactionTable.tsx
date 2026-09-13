@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 import { type Transaction, formatINR } from "@/lib/types";
 import { NameColor } from "@/components/ui/name-color";
+import { Tooltip } from "../ui/tooltip";
 
 interface TransactionTableProps {
   transactions: Transaction[];

@@ -121,9 +121,47 @@ export interface RecurringTransaction {
   resumeFrom?: string;
 }
 
+export interface Transfer {
+  _id: string;
+  _type: "transfer";
+  _createdAt: string;
+  _updatedAt: string;
+  date: string;
+  amount: number;
+  fromAccount: string;
+  fromSubAccount?: string;
+  toAccount: string;
+  toSubAccount?: string;
+  heading?: string;
+  description?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Zod validation schemas
 // ---------------------------------------------------------------------------
+
+const transferBaseSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  amount: z.coerce.number({ error: "Amount must be a number" }).positive("Amount must be greater than 0"),
+  fromAccount: z.string().min(1, "From account is required"),
+  fromSubAccount: z.string().optional(),
+  toAccount: z.string().min(1, "To account is required"),
+  toSubAccount: z.string().optional(),
+  heading: z.string().optional(),
+  description: z.string().optional(),
+});
+
+export const transferFormSchema = transferBaseSchema.refine(
+  (value) =>
+    value.fromAccount !== value.toAccount ||
+    (value.fromSubAccount ?? "") !== (value.toSubAccount ?? ""),
+  { message: "From and to must be different accounts", path: ["toAccount"] }
+);
+
+export { transferBaseSchema };
+
+export type TransferFormValues = z.output<typeof transferFormSchema>;
+export type TransferFormInput = z.input<typeof transferFormSchema>;
 
 export const transactionFormSchema = z.object({
   type: z.enum(["income", "expense"]).default("expense"),
@@ -176,6 +214,20 @@ export const accountItemSchema = z.object({
 // ---------------------------------------------------------------------------
 // GROQ queries
 // ---------------------------------------------------------------------------
+
+export const TRANSFERS_QUERY = `
+  *[_type == "transfer"] | order(date desc) {
+    _id, _type, _createdAt, _updatedAt,
+    date, amount, fromAccount, fromSubAccount, toAccount, toSubAccount, heading, description
+  }
+`;
+
+export const TRANSFER_BY_ID_QUERY = `
+  *[_type == "transfer" && _id == $id][0] {
+    _id, _type, _createdAt, _updatedAt,
+    date, amount, fromAccount, fromSubAccount, toAccount, toSubAccount, heading, description
+  }
+`;
 
 export const TRANSACTIONS_QUERY = `
   *[_type == "transaction"] | order(date desc) {
