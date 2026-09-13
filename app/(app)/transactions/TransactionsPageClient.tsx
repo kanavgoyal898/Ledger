@@ -415,11 +415,11 @@ function TransactionsPageContent() {
         )}
       </div>
 
-      {/* Mobile: Sort by + Export together, flex-row with justify-between */}
-      <div className="flex flex-row items-center justify-between gap-2 lg:hidden">
+      {/* Mobile & Tablet: sort control + refresh + export */}
+      <div className="flex flex-row flex-wrap items-center justify-between gap-2 lg:hidden">
         <div className="flex items-center gap-2">
           <Select value={sortKey} onValueChange={(value) => value && handleSortChange(value as TransactionSortKey)}>
-            <SelectTrigger className="w-32" aria-label="Sort transactions by">
+            <SelectTrigger className="w-32 sm:w-40" aria-label="Sort transactions by">
               <SelectValue>
                 {(selectedValue: TransactionSortKey) => transactionSortKeyLabels[selectedValue] ?? selectedValue}
               </SelectValue>
@@ -442,40 +442,16 @@ function TransactionsPageContent() {
             {sortDirection === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
           </Button>
         </div>
-        <div className="flex flex-row items-center justify-between gap-2 lg:hidden">
-          <div className="flex items-center gap-2">
-            {/* ...sort select and direction button unchanged... */}
-          </div>
-          <div className="flex items-center gap-2">
-            {refreshButton}
-            {exportMenu}
-          </div>
-        </div>
-
-        {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
-        <div className="hidden justify-end gap-2 lg:flex">
+        <div className="flex items-center gap-2">
           {refreshButton}
           {exportMenu}
         </div>
       </div>
 
-      {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
-      <div className="hidden justify-end lg:flex">
-        <div className="flex flex-row items-center justify-between gap-2 lg:hidden">
-          <div className="flex items-center gap-2">
-            {/* ...sort select and direction button unchanged... */}
-          </div>
-          <div className="flex items-center gap-2">
-            {refreshButton}
-            {exportMenu}
-          </div>
-        </div>
-
-        {/* Desktop: Export only, right-aligned — sorting happens via table column headers */}
-        <div className="hidden justify-end gap-2 lg:flex">
-          {refreshButton}
-          {exportMenu}
-        </div>
+      {/* Desktop: export only, right-aligned — sorting happens via table column headers */}
+      <div className="hidden justify-end gap-2 lg:flex">
+        {refreshButton}
+        {exportMenu}
       </div>
 
       {/* Table */}

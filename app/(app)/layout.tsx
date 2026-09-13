@@ -8,15 +8,17 @@ export default function AppLayout({
 }) {
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-dvh overflow-hidden w-full max-w-4xl mx-auto bg-background relative">
-        <header className="flex h-14 shrink-0 items-center px-4 border-b md:h-16 md:px-6">
-          <div className="flex items-center gap-2">
-            <span className="font-bold tracking-tight text-lg">Ledger</span>
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-4 pb-36 md:p-6 md:pb-36">
-          {children}
-        </main>
+      <div className="flex min-h-dvh w-full flex-col bg-background">
+        <div className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col">
+          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center bg-background/95 px-4 backdrop-blur-sm md:h-16 md:px-6">
+            <div className="flex items-center gap-2">
+              <span className="font-bold tracking-tight text-lg">Ledger</span>
+            </div>
+          </header>
+          <main className="flex-1 p-4 pb-36 md:p-6 md:pb-36">
+            {children}
+          </main>
+        </div>
         <FloatingDeck />
       </div>
     </TooltipProvider>
