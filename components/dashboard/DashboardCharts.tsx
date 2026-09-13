@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, useState } from "react"
 import { addDays, addMonths, addYears, differenceInCalendarDays, differenceInCalendarMonths, format, startOfDay, startOfMonth, startOfYear } from "date-fns"
 import { Area, AreaChart, CartesianGrid, Cell, Legend, Pie, PieChart, XAxis, YAxis } from "recharts"
+import { ChevronDown, ChevronRight } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,17 @@ type AccountTotal = { label: string; value: number; subAccounts: SubAccountTotal
 type SplitItem = { label: string; value: number; fill: string; accounts: AccountTotal[]; children?: SplitItem[] }
 
 function SplitLegend({ data, onSelect }: { data: SplitItem[]; onSelect?: () => void }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
+  function toggle(key: string) {
+    setExpanded((current) => {
+      const next = new Set(current)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
   const rowProps = {
     className: onSelect ? "cursor-pointer" : undefined,
     onClick: onSelect,
@@ -39,33 +51,77 @@ function SplitLegend({ data, onSelect }: { data: SplitItem[]; onSelect?: () => v
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((entry, entryIndex) => (
-          <Fragment key={`${entryIndex}-${entry.label}`}>
-            <TableRow {...rowProps} key={`${entryIndex}-${entry.label}-row`}>
-              <TableCell key={`${entryIndex}-${entry.label}-cell`}>
-                <div className="flex min-w-0 items-center gap-2 font-medium">
-                  <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: entry.fill }} />
-                  <span className="min-w-0 wrap-break-word">{entry.label}</span>
-                </div>
-              </TableCell>
-              <TableCell key={`${entryIndex}-${entry.label}-amount`} className="text-right font-mono font-medium tabular-nums">{formatINR(entry.value)}</TableCell>
-            </TableRow>
-            {entry.accounts.map((account, accountIndex) => (
-              <Fragment key={`${entryIndex}-${accountIndex}-${account.label}`}>
-                <TableRow {...rowProps} key={`${entryIndex}-${accountIndex}-${account.label}-row`}>
-                  <TableCell key={`${entryIndex}-${accountIndex}-${account.label}-cell`} className="pl-8 text-muted-foreground">{account.label}</TableCell>
-                  <TableCell key={`${entryIndex}-${accountIndex}-${account.label}-amount`} className="text-right font-mono tabular-nums">{formatINR(account.value)}</TableCell>
-                </TableRow>
-                {account.subAccounts.map((subAccount, subAccountIndex) => (
-                  <TableRow {...rowProps} key={`${entryIndex}-${accountIndex}-${subAccountIndex}-${subAccount.label}`}>
-                    <TableCell key={`${entryIndex}-${accountIndex}-${subAccountIndex}-${subAccount.label}-cell`} className="pl-12 text-muted-foreground">{subAccount.label}</TableCell>
-                    <TableCell key={`${entryIndex}-${accountIndex}-${subAccountIndex}-${subAccount.label}-amount`} className="text-right font-mono text-muted-foreground tabular-nums">{formatINR(subAccount.value)}</TableCell>
-                  </TableRow>
-                ))}
-              </Fragment>
-            ))}
-          </Fragment>
-        ))}
+        {data.map((entry, entryIndex) => {
+          const categoryKey = `${entryIndex}-${entry.label}`
+          const categoryExpanded = expanded.has(categoryKey)
+          const hasAccounts = entry.accounts.length > 0
+
+          return (
+            <Fragment key={categoryKey}>
+              <TableRow {...rowProps} key={`${categoryKey}-row`}>
+                <TableCell key={`${categoryKey}-cell`}>
+                  <div className="flex min-w-0 items-center gap-2 font-medium text-xs">
+                    {hasAccounts ? (
+                      <button
+                        type="button"
+                        onClick={(event) => { event.stopPropagation(); toggle(categoryKey) }}
+                        className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground text-xs"
+                        aria-label={categoryExpanded ? `Collapse ${entry.label}` : `Expand ${entry.label}`}
+                        aria-expanded={categoryExpanded}
+                      >
+                        {categoryExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                      </button>
+                    ) : (
+                      <span className="w-4 shrink-0" />
+                    )}
+                    <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: entry.fill }} />
+                    <span className="min-w-0 wrap-break-word">{entry.label}</span>
+                  </div>
+                </TableCell>
+                <TableCell key={`${categoryKey}-amount`} className="text-right text-xs font-mono font-medium tabular-nums">{formatINR(entry.value)}</TableCell>
+              </TableRow>
+
+              {categoryExpanded && entry.accounts.map((account, accountIndex) => {
+                const accountKey = `${categoryKey}-${accountIndex}-${account.label}`
+                const accountExpanded = expanded.has(accountKey)
+                const hasSubAccounts = account.subAccounts.length > 0
+
+                return (
+                  <Fragment key={accountKey}>
+                    <TableRow {...rowProps} key={`${accountKey}-row`}>
+                      <TableCell key={`${accountKey}-cell`} className="pl-6 text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          {hasSubAccounts ? (
+                            <button
+                              type="button"
+                              onClick={(event) => { event.stopPropagation(); toggle(accountKey) }}
+                              className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground text-xs"
+                              aria-label={accountExpanded ? `Collapse ${account.label}` : `Expand ${account.label}`}
+                              aria-expanded={accountExpanded}
+                            >
+                              {accountExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                            </button>
+                          ) : (
+                            <span className="w-3.5 shrink-0" />
+                          )}
+                          <span className="text-xs">{account.label}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell key={`${accountKey}-amount`} className="text-right text-xs font-mono tabular-nums">{formatINR(account.value)}</TableCell>
+                    </TableRow>
+
+                    {accountExpanded && account.subAccounts.map((subAccount, subAccountIndex) => (
+                      <TableRow {...rowProps} key={`${accountKey}-${subAccountIndex}-${subAccount.label}`}>
+                        <TableCell key={`${accountKey}-${subAccountIndex}-${subAccount.label}-cell`} className="pl-12 text-muted-foreground text-xs">{subAccount.label}</TableCell>
+                        <TableCell key={`${accountKey}-${subAccountIndex}-${subAccount.label}-amount`} className="text-right font-mono text-xs text-muted-foreground tabular-nums">{formatINR(subAccount.value)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </Fragment>
+                )
+              })}
+            </Fragment>
+          )
+        })}
       </TableBody>
     </Table>
   )
@@ -224,7 +280,7 @@ export function DashboardCharts({ transactions, range }: { transactions: Transac
                             setExpandedCategories((current) => ({ ...current, [type]: selected.label }))
                           }
                       }}>
-                        {data.map((entry, index) => <Cell key={`${index}-${entry.label}`} fill={entry.fill} />)}
+                        {data.map((entry, index) => <Cell key={`${index}-${entry.label}`} fill={entry.fill} stroke="var(--card)" strokeWidth={2} />)}
                       </Pie>
                     </PieChart>
                   </ChartContainer>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { endOfMonth, endOfWeek, endOfYear, format, startOfMonth, startOfWeek, startOfYear, subMonths, subWeeks, subYears } from "date-fns"
+import { format, startOfDay, startOfMonth, startOfWeek, startOfYear } from "date-fns"
 
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,9 +28,9 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
     const today = new Date()
     switch (timeline) {
       case "current-month":
-        return { start: startOfMonth(today), end: today }
+        return { start: startOfDay(startOfMonth(today)), end: today }
       case "current-year":
-        return { start: startOfYear(today), end: today }
+        return { start: startOfDay(startOfYear(today)), end: today }
       case "max":
         return { start: transactions.reduce((earliest, transaction) => {
           const date = new Date(transaction.date)
@@ -39,7 +39,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
       case "custom":
         return { start: new Date(`${customStart}T00:00:00`), end: new Date(`${customEnd}T23:59:59`) }
       default:
-        return { start: startOfWeek(today, { weekStartsOn: 1 }), end: today }
+        return { start: startOfDay(startOfWeek(today, { weekStartsOn: 1 })), end: today }
     }
   }, [customEnd, customStart, timeline, transactions])
 
