@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { NameColor } from "@/components/ui/name-color";
+import { CategoryMigrationDialog } from "@/components/settings/CategoryMigrationDialog";
 import type { CategoryItem } from "@/lib/types";
 
 interface CategoryManagerProps {
@@ -26,6 +27,11 @@ interface EditState {
   description: string;
 }
 
+interface PendingDelete {
+  from: { category: string; subCategory?: string };
+  execute: () => Promise<void>;
+}
+
 export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) {
   const [items, setItems] = useState<CategoryItem[]>(categories);
   const [newLabel, setNewLabel] = useState("");
@@ -33,6 +39,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [newSubMap, setNewSubMap] = useState<Record<string, { label: string; description: string }>>({});
   const [saving, setSaving] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
 
   // Inline edit state: "cat:<key>" | "sub:<parentKey>:<subLabel>"
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,8 +85,15 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
     setNewDesc("");
   }
 
-  function removeCategory(key: string) {
-    save(items.map((c) => c._key === key ? { ...c, deleted: true } : c));
+  async function removeCategory(key: string) {
+    await save(items.map((c) => c._key === key ? { ...c, deleted: true } : c));
+  }
+
+  function requestRemoveCategory(cat: CategoryItem) {
+    setPendingDelete({
+      from: { category: cat.label },
+      execute: () => removeCategory(cat._key),
+    });
   }
 
   function startEditCategory(cat: CategoryItem) {
@@ -132,7 +146,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
     setNewSubMap((prev) => ({ ...prev, [parentKey]: { label: "", description: "" } }));
   }
 
-  function removeSubCategory(parentKey: string, subLabel: string) {
+  async function removeSubCategory(parentKey: string, subLabel: string) {
     const updated = items.map((c) => {
       if (c._key === parentKey) {
         return {
@@ -142,7 +156,14 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
       }
       return c;
     });
-    save(updated);
+    await save(updated);
+  }
+
+  function requestRemoveSubCategory(parentKey: string, parentLabel: string, subLabel: string) {
+    setPendingDelete({
+      from: { category: parentLabel, subCategory: subLabel },
+      execute: () => removeSubCategory(parentKey, subLabel),
+    });
   }
 
   function startEditSubCategory(parentKey: string, subLabel: string, subDesc: string | undefined) {
@@ -284,7 +305,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-destructive hover:text-destructive"
-                        onClick={() => removeCategory(cat._key)}
+                        onClick={() => requestRemoveCategory(cat)}
                         disabled={saving}
                         title="Delete"
                       >
@@ -365,7 +386,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
                                     variant="ghost"
                                     size="icon"
                                     className="h-6 w-6 text-destructive hover:text-destructive"
-                                    onClick={() => removeSubCategory(cat._key, sub.label)}
+                                    onClick={() => requestRemoveSubCategory(cat._key, cat.label, sub.label)}
                                     disabled={saving}
                                     title="Delete"
                                   >
@@ -422,6 +443,18 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
           })}
         </div>
       </CardContent>
+
+      <CategoryMigrationDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        categories={items}
+        from={pendingDelete?.from ?? null}
+        onDelete={async () => {
+          if (!pendingDelete) return;
+          await pendingDelete.execute();
+          setPendingDelete(null);
+        }}
+      />
     </Card>
   );
 }
