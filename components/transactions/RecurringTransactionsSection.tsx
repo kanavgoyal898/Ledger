@@ -44,8 +44,8 @@ function RuleCard({ rule, onChanged }: { rule: RecurringTransaction; onChanged: 
   }
 
   return (
-    <Card size="sm" className="h-full">
-      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+    <Card size="sm" className="h-full justify-between">
+      <CardHeader className="flex flex-row items-start gap-3 pb-2">
         <div className="min-w-0">
           <CardTitle className="truncate text-sm">{rule.heading || rule.category}</CardTitle>
           <p className="mt-1 text-xs text-muted-foreground">{rule.type === "income" ? "Income" : "Expense"} · {formatRecurrenceFrequency(rule.frequency)}</p>

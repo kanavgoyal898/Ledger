@@ -580,19 +580,19 @@ export function TransactionTable({
         </Table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+      <div className="flex flex-col items-end md:flex-row md:flex-wrap md:items-center md:justify-between gap-2 text-sm text-muted-foreground">
         <p>
           {pageTransactionCount === 0
             ? "0"
-            : `${pageStartIndex + 1}-${pageEndIndex + 1} of ${sortedTransactions.length} transactions`}
+            : `${pageStartIndex + 1} - ${pageEndIndex + 1} of ${sortedTransactions.length} transactions`}
         </p>
         <div className="ml-auto flex items-center gap-2">
           <Select value={pageSize} onValueChange={(value) => value && setPageSize(value)}>
             <SelectTrigger className="w-28" aria-label="Rows per page"><SelectValue /></SelectTrigger>
             <SelectContent className="p-1 lg:p-2">
-              <SelectItem value="10">10 per page</SelectItem>
-              <SelectItem value="25">25 per page</SelectItem>
-              <SelectItem value="50">50 per page</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" aria-label="Previous page" disabled={page === 1} onClick={() => setPage((value) => value - 1)}><ChevronLeft /></Button>
