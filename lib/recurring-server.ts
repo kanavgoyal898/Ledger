@@ -9,29 +9,35 @@ export async function processRecurringTransaction(rule: RecurringTransaction, to
   const todayKey = dateKey(today);
   const occurrenceKeys = occurrenceDates(rule.startDate, rule.frequency, todayKey, rule.endDate)
     .filter((occurrence) => !rule.resumeFrom || occurrence >= rule.resumeFrom);
+
   const existing = await sanityClient.fetch<{ recurringOccurrence?: string }[]>(
     `*[_type == "transaction" && recurringTransactionId == $id]{ recurringOccurrence }`,
     { id: rule._id },
     { cache: "no-store" },
   );
-  const existingKeys = new Set(existing.map((transaction) => transaction.recurringOccurrence));
+  const existingKeys = new Set(existing.map((tx) => tx.recurringOccurrence));
 
-  for (const occurrence of occurrenceKeys) {
-    if (existingKeys.has(occurrence)) continue;
-    await sanityWriteClient.create({
-      _type: "transaction",
-      type: rule.type,
-      date: `${occurrence}T00:00:00.000Z`,
-      amount: rule.amount,
-      category: rule.category,
-      ...(rule.subCategory ? { subCategory: rule.subCategory } : {}),
-      account: rule.account,
-      ...(rule.subAccount ? { subAccount: rule.subAccount } : {}),
-      ...(rule.heading ? { heading: rule.heading } : {}),
-      ...(rule.description ? { description: rule.description } : {}),
-      recurringTransactionId: rule._id,
-      recurringOccurrence: occurrence,
-    });
+  // Collect all missing occurrences and batch them into a single transaction commit
+  const missingOccurrences = occurrenceKeys.filter((o) => !existingKeys.has(o));
+  if (missingOccurrences.length > 0) {
+    const transaction = sanityWriteClient.transaction();
+    for (const occurrence of missingOccurrences) {
+      transaction.create({
+        _type: "transaction",
+        type: rule.type,
+        date: `${occurrence}T00:00:00.000Z`,
+        amount: rule.amount,
+        category: rule.category,
+        ...(rule.subCategory ? { subCategory: rule.subCategory } : {}),
+        account: rule.account,
+        ...(rule.subAccount ? { subAccount: rule.subAccount } : {}),
+        ...(rule.heading ? { heading: rule.heading } : {}),
+        ...(rule.description ? { description: rule.description } : {}),
+        recurringTransactionId: rule._id,
+        recurringOccurrence: occurrence,
+      });
+    }
+    await transaction.commit();
   }
 
   const updatedNextOccurrence = nextOccurrence(
@@ -52,5 +58,6 @@ export async function processAllRecurringTransactions() {
     {},
     { cache: "no-store" },
   );
-  for (const rule of rules) await processRecurringTransaction(rule);
+  // Process all rules in parallel instead of sequentially
+  await Promise.all(rules.map((rule) => processRecurringTransaction(rule)));
 }

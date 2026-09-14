@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addDays, format } from "date-fns";
+import { revalidateTag } from "next/cache";
 import { sanityWriteClient } from "@/lib/sanity";
 import { dateKey } from "@/lib/recurrence";
 import { recurringTransactionFormSchema } from "@/lib/types";
@@ -24,7 +25,13 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       if (resumeMode === "backfill") patch.resumeFrom = undefined;
     }
     const updated = await sanityWriteClient.patch(id).set(patch).unset(patch.resumeFrom === undefined ? ["resumeFrom"] : []).commit();
-    if (updated.active) return NextResponse.json(await processRecurringTransaction(updated as never));
+    if (updated.active) {
+      const result = await processRecurringTransaction(updated as never);
+      revalidateTag("recurring", "max");
+      revalidateTag("transactions", "max");
+      return NextResponse.json(result);
+    }
+    revalidateTag("recurring", "max");
     return NextResponse.json(updated);
   } catch (error) {
     console.error("PATCH /api/recurring/[id] error:", error);
@@ -36,6 +43,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     await sanityWriteClient.delete(id);
+    revalidateTag("recurring", "max");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/recurring/[id] error:", error);

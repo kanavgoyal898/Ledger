@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
+import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { dateKey, nextOccurrence } from "@/lib/recurrence";
 import { recurringTransactionFormSchema } from "@/lib/types";
@@ -6,8 +8,14 @@ import { processAllRecurringTransactions, processRecurringTransaction } from "@/
 
 export async function GET() {
   try {
-    await processAllRecurringTransactions();
-    const rules = await sanityClient.fetch(`*[_type == "recurringTransaction"] | order(active desc, nextOccurrence asc)` , {}, { cache: "no-store" });
+    // Fire-and-forget: process recurring rules after response is sent, don't block the page
+    after(async () => {
+      await processAllRecurringTransactions();
+      revalidateTag("recurring", "max");
+      revalidateTag("transactions", "max");
+    });
+
+    const rules = await sanityClient.fetch(`*[_type == "recurringTransaction"] | order(active desc, nextOccurrence asc)`, {}, { next: { tags: ["recurring"] } });
     return NextResponse.json(rules);
   } catch (error) {
     console.error("GET /api/recurring error:", error);
@@ -27,6 +35,8 @@ export async function POST(request: NextRequest) {
       nextOccurrence: nextOccurrence(start, frequency, start, endDate),
     });
     const processed = await processRecurringTransaction(rule as never);
+    revalidateTag("recurring", "max");
+    revalidateTag("transactions", "max");
     return NextResponse.json(processed, { status: 201 });
   } catch (error) {
     console.error("POST /api/recurring error:", error);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { TRANSACTION_BY_ID_QUERY, transactionFormSchema } from "@/lib/types";
 
@@ -12,7 +13,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const transaction = await sanityClient.fetch(
       TRANSACTION_BY_ID_QUERY,
       { id },
-      { cache: "no-store" }
+      { next: { tags: ["transactions"] } }
     );
 
     if (!transaction) {
@@ -52,6 +53,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       .set(patch)
       .commit();
 
+    revalidateTag("transactions", "max");
     return NextResponse.json(updated);
   } catch (error) {
     console.error("PATCH /api/transactions/[id] error:", error);
@@ -66,6 +68,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     await sanityWriteClient.delete(id);
+    revalidateTag("transactions", "max");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/transactions/[id] error:", error);

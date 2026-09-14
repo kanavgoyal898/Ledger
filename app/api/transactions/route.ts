@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { transactionFormSchema } from "@/lib/types";
 
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     }`;
 
     const transactions = await sanityClient.fetch(query, params, {
-      cache: "no-store",
+      next: { tags: ["transactions"] },
     });
 
     return NextResponse.json(transactions);
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
       ...(description ? { description } : {}),
     });
 
+    revalidateTag("transactions", "max");
     return NextResponse.json(doc, { status: 201 });
   } catch (error) {
     console.error("POST /api/transactions error:", error);

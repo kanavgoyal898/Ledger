@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { SETTINGS_QUERY } from "@/lib/types";
 import type { CategoryItem, AccountItem, Settings } from "@/lib/types";
@@ -10,7 +11,7 @@ export async function GET() {
     const settings = await sanityClient.fetch(
       SETTINGS_QUERY,
       {},
-      { cache: "no-store" }
+      { next: { tags: ["settings"] } }
     );
 
     // Return empty settings if singleton doesn't exist yet
@@ -145,22 +146,24 @@ async function applyTransactionRenames({
   accountRenames: Map<string, string>;
   subAccountRenames: Map<string, Map<string, string>>;
 }) {
-  // For each category rename, find & patch matching transactions
+  // For each category rename, batch all patches into a single transaction commit
   for (const [oldLabel, newLabel] of categoryRenames) {
     const txs: { _id: string }[] = await sanityClient.fetch(
       `*[_type == "transaction" && category == $cat]{_id}`,
       { cat: oldLabel },
       { cache: "no-store" }
     );
-    for (const tx of txs) {
-      await sanityWriteClient.patch(tx._id).set({ category: newLabel }).commit();
+    if (txs.length > 0) {
+      const transaction = sanityWriteClient.transaction();
+      for (const tx of txs) {
+        transaction.patch(tx._id, (p) => p.set({ category: newLabel }));
+      }
+      await transaction.commit();
     }
   }
 
-  // For each sub-category rename, find & patch matching transactions
+  // For each sub-category rename, batch all patches into a single transaction commit
   for (const [catLabel, subMap] of subCategoryRenames) {
-    // After a category rename, catLabel is already the new label
-    // We must also consider the old category label
     const effectiveCatLabel = catLabel;
     for (const [oldSubLabel, newSubLabel] of subMap) {
       const txs: { _id: string }[] = await sanityClient.fetch(
@@ -168,25 +171,33 @@ async function applyTransactionRenames({
         { cat: effectiveCatLabel, sub: oldSubLabel },
         { cache: "no-store" }
       );
-      for (const tx of txs) {
-        await sanityWriteClient.patch(tx._id).set({ subCategory: newSubLabel }).commit();
+      if (txs.length > 0) {
+        const transaction = sanityWriteClient.transaction();
+        for (const tx of txs) {
+          transaction.patch(tx._id, (p) => p.set({ subCategory: newSubLabel }));
+        }
+        await transaction.commit();
       }
     }
   }
 
-  // For each account rename, find & patch matching transactions
+  // For each account rename, batch all patches into a single transaction commit
   for (const [oldLabel, newLabel] of accountRenames) {
     const txs: { _id: string }[] = await sanityClient.fetch(
       `*[_type == "transaction" && account == $acc]{_id}`,
       { acc: oldLabel },
       { cache: "no-store" }
     );
-    for (const tx of txs) {
-      await sanityWriteClient.patch(tx._id).set({ account: newLabel }).commit();
+    if (txs.length > 0) {
+      const transaction = sanityWriteClient.transaction();
+      for (const tx of txs) {
+        transaction.patch(tx._id, (p) => p.set({ account: newLabel }));
+      }
+      await transaction.commit();
     }
   }
 
-  // For each sub-account rename, find & patch matching transactions
+  // For each sub-account rename, batch all patches into a single transaction commit
   for (const [accLabel, subMap] of subAccountRenames) {
     const effectiveAccLabel = accLabel;
     for (const [oldSubLabel, newSubLabel] of subMap) {
@@ -195,8 +206,12 @@ async function applyTransactionRenames({
         { acc: effectiveAccLabel, sub: oldSubLabel },
         { cache: "no-store" }
       );
-      for (const tx of txs) {
-        await sanityWriteClient.patch(tx._id).set({ subAccount: newSubLabel }).commit();
+      if (txs.length > 0) {
+        const transaction = sanityWriteClient.transaction();
+        for (const tx of txs) {
+          transaction.patch(tx._id, (p) => p.set({ subAccount: newSubLabel }));
+        }
+        await transaction.commit();
       }
     }
   }
@@ -262,6 +277,8 @@ export async function PATCH(request: NextRequest) {
       });
     }
 
+    revalidateTag("settings", "max");
+    revalidateTag("transactions", "max");
     return NextResponse.json(savedSettings);
   } catch (error) {
     console.error("PATCH /api/settings error:", error);
