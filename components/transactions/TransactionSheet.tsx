@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 
 import {
   Dialog,
@@ -218,7 +218,7 @@ export function TransactionSheet({
             )}
 
             {repeat === "recurring" && !isEditing && (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-4 duration-300">
                 <FormItem>
                   <FormLabel>Frequency</FormLabel>
                   <Select value={frequency} onValueChange={(value) => setFrequency(value as RecurrenceFrequency)}>
@@ -506,7 +506,10 @@ export function TransactionSheet({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="min-w-24">
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 {isSubmitting
                   ? "Saving…"
                   : isEditing

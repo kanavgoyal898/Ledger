@@ -133,13 +133,15 @@ function TransactionMobileCard({
   transaction,
   onEdit,
   onDeleteRequest,
+  index = 0,
 }: {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
   onDeleteRequest: (id: string) => void;
+  index?: number;
 }) {
   return (
-    <div className="rounded-md border p-2">
+    <div className="rounded-md border p-2 animate-fade-up delay-stagger transition-colors hover:bg-accent/10" style={{ "--stagger-delay": `${index * 30}ms` } as React.CSSProperties}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-medium text-wrap">{transaction.heading || "—"}</p>
@@ -212,13 +214,15 @@ function TransactionTabletRow({
   transaction,
   onEdit,
   onDeleteRequest,
+  index = 0,
 }: {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
   onDeleteRequest: (id: string) => void;
+  index?: number;
 }) {
   return (
-    <div className="grid grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md border p-2">
+    <div className="grid grid-cols-[5.5rem_minmax(0,1.5fr)_minmax(0,1fr)_auto_auto] items-center gap-2 rounded-md border p-2 animate-fade-up delay-stagger transition-colors hover:bg-accent/10" style={{ "--stagger-delay": `${index * 30}ms` } as React.CSSProperties}>
       <div className="text-xs text-muted-foreground">
         {transactionDateDisplay(transaction.date)}
       </div>
@@ -285,13 +289,15 @@ function TransactionDesktopRow({
   transaction,
   onEdit,
   onDeleteRequest,
+  index = 0,
 }: {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
   onDeleteRequest: (id: string) => void;
+  index?: number;
 }) {
   return (
-    <TableRow>
+    <TableRow className="animate-fade-up delay-stagger transition-colors hover:bg-accent/30" style={{ "--stagger-delay": `${index * 30}ms` } as React.CSSProperties}>
       <TableCell className="whitespace-nowrap text-sm">
         {transactionDateDisplay(transaction.date)}
       </TableCell>
@@ -493,12 +499,13 @@ export function TransactionTable({
             <div key={group.dateKey} className="space-y-2">
               <DateGroupHeading group={group} />
               <div className="space-y-2">
-                {group.transactions.map((transaction) => (
+                {group.transactions.map((transaction, index) => (
                   <TransactionMobileCard
                     key={transaction._id}
                     transaction={transaction}
                     onEdit={onEdit}
                     onDeleteRequest={setDeletingId}
+                    index={index}
                   />
                 ))}
               </div>
@@ -506,12 +513,13 @@ export function TransactionTable({
           ))
         ) : (
           <div className="space-y-2">
-            {pageTransactions.map((transaction) => (
+            {pageTransactions.map((transaction, index) => (
               <TransactionMobileCard
                 key={transaction._id}
                 transaction={transaction}
                 onEdit={onEdit}
                 onDeleteRequest={setDeletingId}
+                index={index}
               />
             ))}
           </div>
@@ -525,12 +533,13 @@ export function TransactionTable({
             <div key={group.dateKey} className="space-y-1.5">
               <DateGroupHeading group={group} />
               <div className="space-y-1.5">
-                {group.transactions.map((transaction) => (
+                {group.transactions.map((transaction, index) => (
                   <TransactionTabletRow
                     key={transaction._id}
                     transaction={transaction}
                     onEdit={onEdit}
                     onDeleteRequest={setDeletingId}
+                    index={index}
                   />
                 ))}
               </div>
@@ -538,12 +547,13 @@ export function TransactionTable({
           ))
         ) : (
           <div className="space-y-1.5">
-            {pageTransactions.map((transaction) => (
+            {pageTransactions.map((transaction, index) => (
               <TransactionTabletRow
                 key={transaction._id}
                 transaction={transaction}
                 onEdit={onEdit}
                 onDeleteRequest={setDeletingId}
+                index={index}
               />
             ))}
           </div>
@@ -566,15 +576,16 @@ export function TransactionTable({
           </TableHeader>
           <TableBody>
             {isGroupedByDate
-              ? pageGroups.map((group) => (
-                  <FragmentGroup key={group.dateKey} group={group} onEdit={onEdit} onDeleteRequest={setDeletingId} />
+              ? pageGroups.map((group, groupIndex) => (
+                  <FragmentGroup key={group.dateKey} group={group} onEdit={onEdit} onDeleteRequest={setDeletingId} groupIndex={groupIndex} />
                 ))
-              : pageTransactions.map((transaction) => (
+              : pageTransactions.map((transaction, index) => (
                   <TransactionDesktopRow
                     key={transaction._id}
                     transaction={transaction}
                     onEdit={onEdit}
                     onDeleteRequest={setDeletingId}
+                    index={index}
                   />
                 ))}
           </TableBody>
@@ -631,14 +642,16 @@ function FragmentGroup({
   group,
   onEdit,
   onDeleteRequest,
+  groupIndex = 0,
 }: {
   group: DateGroup;
   onEdit: (transaction: Transaction) => void;
   onDeleteRequest: (id: string) => void;
+  groupIndex?: number;
 }) {
   return (
     <>
-      <TableRow className="bg-muted/40 hover:bg-muted/40">
+      <TableRow className="bg-muted/40 hover:bg-muted/40 animate-fade-up delay-stagger" style={{ "--stagger-delay": `${groupIndex * 30}ms` } as React.CSSProperties}>
         <TableCell colSpan={5} className="py-1.5 text-xs font-semibold text-muted-foreground">
           {group.label}
         </TableCell>
@@ -650,12 +663,13 @@ function FragmentGroup({
           
         </TableCell>
       </TableRow>
-      {group.transactions.map((transaction) => (
+      {group.transactions.map((transaction, index) => (
         <TransactionDesktopRow
           key={transaction._id}
           transaction={transaction}
           onEdit={onEdit}
           onDeleteRequest={onDeleteRequest}
+          index={index + (groupIndex * 10)}
         />
       ))}
     </>

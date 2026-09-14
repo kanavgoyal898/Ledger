@@ -303,7 +303,7 @@ export function AccountPage() {
         </form>
       ) : (
       /* Details card */
-      <div className="w-full overflow-x-auto rounded-xl border bg-card text-sm">
+      <div className="w-full overflow-x-auto rounded-xl border bg-card text-sm animate-in fade-in duration-300">
         <div className="flex items-center gap-3 px-4 py-3">
           <User className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-muted-foreground w-28 shrink-0">First Name</span>
@@ -344,7 +344,7 @@ export function AccountPage() {
       </div>
       )}
 
-      <section className="w-full space-y-5 rounded-xl border bg-card p-4 md:p-6">
+      <section className="w-full space-y-5 rounded-xl border bg-card p-4 md:p-6 animate-fade-up delay-stagger" style={{ "--stagger-delay": "300ms" } as React.CSSProperties}>
         <div className="flex items-start gap-3">
           <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div>

@@ -57,7 +57,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between animate-fade-up" style={{ "--stagger-delay": "0ms" } as React.CSSProperties}>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         </div>
@@ -76,7 +76,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
             >
               <SelectTrigger
                 id="dashboard-timeline"
-                className="h-10 w-full"
+                className="h-10 w-full transition-shadow focus:ring-2"
                 aria-label="Dashboard timeline"
               >
                 <SelectValue>{timelineLabels[timeline]}</SelectValue>
@@ -85,11 +85,11 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
               <SelectContent
                 align="start"
                 alignItemWithTrigger={false}
-                className="p-1 lg:p-2"
+                className="p-1 lg:p-2 animate-in fade-in zoom-in-95 duration-200"
               >
                 {(Object.entries(timelineLabels) as [Timeline, string][]).map(
                   ([value, label]) => (
-                    <SelectItem key={value} value={value}>
+                    <SelectItem key={value} value={value} className="cursor-pointer transition-colors">
                       {label}
                     </SelectItem>
                   )
@@ -99,7 +99,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
           </div>
 
           {timeline === "custom" && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 animate-fade-up">
               <div className="min-w-0">
                 <label
                   className="mb-1.5 block text-xs text-muted-foreground"
@@ -112,7 +112,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
                   type="date"
                   value={customStart}
                   onChange={(event) => setCustomStart(event.target.value)}
-                  className="w-full min-w-0"
+                  className="w-full min-w-0 transition-shadow focus:ring-2"
                 />
               </div>
 
@@ -128,7 +128,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
                   type="date"
                   value={customEnd}
                   onChange={(event) => setCustomEnd(event.target.value)}
-                  className="text-xs w-full min-w-0"
+                  className="text-xs w-full min-w-0 transition-shadow focus:ring-2"
                 />
               </div>
             </div>
@@ -136,15 +136,19 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <Card className="min-w-0">
+        <Card className="min-w-0 animate-fade-up delay-stagger hover:shadow-md transition-shadow" style={{ "--stagger-delay": "100ms" } as React.CSSProperties}>
           <CardHeader className="gap-1">
-            <CardTitle className="truncate text-xl text-center text-emerald-600 dark:text-emerald-400 sm:text-2xl">{formatINR(totalIncome)}</CardTitle>
+            <CardTitle key={`income-${totalIncome}-${timeline}`} className="truncate text-xl text-center text-emerald-600 dark:text-emerald-400 sm:text-2xl animate-number-flash tabular-nums">
+              {formatINR(totalIncome)}
+            </CardTitle>
             <CardDescription className="text-center text-xs">Total Income</CardDescription>
           </CardHeader>
         </Card>
-        <Card className="min-w-0">
+        <Card className="min-w-0 animate-fade-up delay-stagger hover:shadow-md transition-shadow" style={{ "--stagger-delay": "200ms" } as React.CSSProperties}>
           <CardHeader className="gap-1">
-            <CardTitle className="truncate text-xl text-center text-rose-600 dark:text-rose-400 sm:text-2xl">{formatINR(totalExpenditure)}</CardTitle>
+            <CardTitle key={`expense-${totalExpenditure}-${timeline}`} className="truncate text-xl text-center text-rose-600 dark:text-rose-400 sm:text-2xl animate-number-flash tabular-nums">
+              {formatINR(totalExpenditure)}
+            </CardTitle>
             <CardDescription className="text-center text-xs">Total Expenditure</CardDescription>
           </CardHeader>
         </Card>

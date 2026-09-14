@@ -49,19 +49,23 @@ export default function SettingsPageClient() {
       </div>
 
       {loading ? (
-        <div className="flex h-48 items-center justify-center">
+        <div className="flex h-48 items-center justify-center animate-fade-in">
           <p className="text-sm text-muted-foreground">Loading Settings…</p>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
-          <CategoryManager
-            categories={settings.categories ?? []}
-            onUpdate={updateCategories}
-          />
-          <AccountManager
-            accounts={settings.accounts ?? []}
-            onUpdate={updateAccounts}
-          />
+          <div className="animate-fade-up delay-stagger" style={{ "--stagger-delay": "100ms" } as React.CSSProperties}>
+            <CategoryManager
+              categories={settings.categories ?? []}
+              onUpdate={updateCategories}
+            />
+          </div>
+          <div className="animate-fade-up delay-stagger" style={{ "--stagger-delay": "200ms" } as React.CSSProperties}>
+            <AccountManager
+              accounts={settings.accounts ?? []}
+              onUpdate={updateAccounts}
+            />
+          </div>
         </div>
       )}
     </div>

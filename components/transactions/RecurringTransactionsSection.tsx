@@ -27,7 +27,7 @@ function calendarTransactionsForRules(rules: RecurringTransaction[]) {
   return rules.flatMap((rule) => transactionDatesForCalendar(rule).map((date) => ({ date, rule })));
 }
 
-function RuleCard({ rule, onChanged }: { rule: RecurringTransaction; onChanged: () => void }) {
+function RuleCard({ rule, onChanged, index = 0 }: { rule: RecurringTransaction; onChanged: () => void; index?: number }) {
   const [editing, setEditing] = useState(false);
   const [amount, setAmount] = useState(String(rule.amount));
   const [frequency, setFrequency] = useState(rule.frequency);
@@ -44,7 +44,7 @@ function RuleCard({ rule, onChanged }: { rule: RecurringTransaction; onChanged: 
   }
 
   return (
-    <Card size="sm" className="h-full justify-between">
+    <Card size="sm" className="h-full justify-between animate-fade-up delay-stagger transition-colors hover:bg-accent/10" style={{ "--stagger-delay": `${index * 50}ms` } as React.CSSProperties}>
       <CardHeader className="flex flex-row items-start gap-3 pb-2">
         <div className="min-w-0">
           <CardTitle className="truncate text-sm">{rule.heading || rule.category}</CardTitle>
@@ -60,7 +60,7 @@ function RuleCard({ rule, onChanged }: { rule: RecurringTransaction; onChanged: 
           {rule.subAccount && <Badge variant="secondary" className="text-xs"><NameColor name={rule.subAccount} />{rule.subAccount}</Badge>}
         </div>
         {editing ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Amount</label>
               <Input type="number" value={amount} onChange={(event) => setAmount(event.target.value)} aria-label="Amount" />
@@ -193,7 +193,7 @@ export function RecurringTransactionsSection() {
                   className="relative hidden w-full! max-w-none p-4 [--cell-size:--spacing(7)] md:block"
                 />
         </div>
-        {["Active Recurring Transactions", "Inactive Recurring Transactions"].map((heading, index) => { const items = index === 0 ? active : inactive; return <section key={heading} className="space-y-3"><div className="flex items-center justify-between"><h3 className="font-semibold">{heading}</h3><span className="text-xs text-muted-foreground">{items.length}</span></div>{items.length === 0 ? <p className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">No {index === 0 ? "Active" : "Inactive"} Recurring Transactions.</p> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{items.map((rule) => <RuleCard key={rule._id} rule={rule} onChanged={load} />)}</div>}</section>; })}
+        {["Active Recurring Transactions", "Inactive Recurring Transactions"].map((heading, sectionIndex) => { const items = sectionIndex === 0 ? active : inactive; return <section key={heading} className="space-y-3"><div className="flex items-center justify-between"><h3 className="font-semibold">{heading}</h3><span className="text-xs text-muted-foreground">{items.length}</span></div>{items.length === 0 ? <p className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">No {sectionIndex === 0 ? "Active" : "Inactive"} Recurring Transactions.</p> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{items.map((rule, index) => <RuleCard key={rule._id} rule={rule} onChanged={load} index={index} />)}</div>}</section>; })}
       </>}
     </section>
   );
