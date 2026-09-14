@@ -7,11 +7,9 @@ export const metadata: Metadata = {
   title: "Dashboard",
 };
 
-export const revalidate = 0;
-
 export default async function DashboardPage() {
   const transactions: Transaction[] = await sanityClient
-    .fetch(TRANSACTIONS_QUERY, {}, { cache: "no-store" })
+    .fetch(TRANSACTIONS_QUERY, {}, { next: { tags: ["transactions"] } })
     .catch(() => []);
 
   return (

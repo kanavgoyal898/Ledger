@@ -9,7 +9,7 @@ export const sanityClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: true,
+  useCdn: false, // Next.js is handling the caching via revalidateTag, we must bypass Sanity's CDN to avoid stale reads
 });
 
 /** Write client — uses token from env (server-side only) */
