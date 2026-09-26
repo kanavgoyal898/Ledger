@@ -56,22 +56,15 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
 
     const existingIndex = items.findIndex(a => a.label.toLowerCase() === label.toLowerCase());
 
-    let updated;
     if (existingIndex >= 0) {
-      if (!items[existingIndex].deleted) {
-        setNewLabel("");
-        setNewDesc("");
-        return; // Already active
-      }
-      // Silently reverse soft-delete
-      updated = [...items];
-      updated[existingIndex] = { ...updated[existingIndex], deleted: false, description: newDesc.trim() || undefined };
-    } else {
-      updated = [
-        ...items,
-        { _key: crypto.randomUUID(), label, description: newDesc.trim() || undefined, deleted: false, subAccounts: [] },
-      ];
+      setNewLabel("");
+      setNewDesc("");
+      return;
     }
+    const updated = [
+      ...items,
+      { _key: crypto.randomUUID(), label, description: newDesc.trim() || undefined, subAccounts: [] },
+    ];
 
     save(updated);
     setNewLabel("");
@@ -79,7 +72,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
   }
 
   function removeAccount(key: string) {
-    save(items.map((a) => a._key === key ? { ...a, deleted: true } : a));
+    save(items.filter((a) => a._key !== key));
   }
 
   function startEditAccount(acc: AccountItem) {
@@ -114,15 +107,8 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
         const existingSubs = a.subAccounts ?? [];
         const existingIndex = existingSubs.findIndex(s => s.label.toLowerCase() === subLabel.toLowerCase());
 
-        let newSubs;
-        if (existingIndex >= 0) {
-          if (!existingSubs[existingIndex].deleted) return a;
-          // Silently reverse soft-delete
-          newSubs = [...existingSubs];
-          newSubs[existingIndex] = { ...newSubs[existingIndex], deleted: false, description: sub.description?.trim() || undefined };
-        } else {
-          newSubs = [...existingSubs, { label: subLabel, description: sub.description?.trim() || undefined, deleted: false }];
-        }
+        if (existingIndex >= 0) return a;
+        const newSubs = [...existingSubs, { label: subLabel, description: sub.description?.trim() || undefined }];
         return { ...a, subAccounts: newSubs };
       }
       return a;
@@ -137,7 +123,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
       if (a._key === parentKey) {
         return {
           ...a,
-          subAccounts: (a.subAccounts ?? []).map(s => s.label === subLabel ? { ...s, deleted: true } : s)
+          subAccounts: (a.subAccounts ?? []).filter(s => s.label !== subLabel)
         };
       }
       return a;
@@ -172,8 +158,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const activeItems = items
-    .filter(a => !a.deleted)
+  const activeItems = [...items]
     .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
@@ -215,8 +200,7 @@ export function AccountManager({ accounts, onUpdate }: AccountManagerProps) {
 
         <div className="flex flex-col gap-2">
           {activeItems.map((acc) => {
-            const activeSubs = (acc.subAccounts ?? [])
-              .filter(s => !s.deleted)
+            const activeSubs = (acc.subAccounts ?? []).slice()
               .sort((a, b) => a.label.localeCompare(b.label));
             const accEditId = `acc:${acc._key}`;
             const isEditingAcc = editingId === accEditId;

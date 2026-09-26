@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isAuthenticated = request.cookies.has("ledger_auth");
+  const isAuthenticated = getAuthenticatedUsername(request) !== null;
+
+  // The home page renders a public introduction for signed-out visitors.
+  if (pathname === "/") return NextResponse.next();
 
   // Already on login page — if authenticated, redirect to home
   if (pathname === "/login") {

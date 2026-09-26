@@ -43,9 +43,10 @@ interface TransferTableProps {
   onSortChange: (key: TransferSortKey) => void;
 }
 
-export type TransferSortKey = "date" | "heading" | "fromAccount" | "toAccount" | "amount";
+export type TransferSortKey = "_updatedAt" | "date" | "heading" | "fromAccount" | "toAccount" | "amount";
 
 export const transferSortKeyLabels: Record<TransferSortKey, string> = {
+  _updatedAt: "Last modified",
   date: "Date",
   heading: "Heading",
   fromAccount: "From",
@@ -61,7 +62,7 @@ export function nextTransferSort(
   if (currentKey === nextKey) {
     return { key: currentKey, direction: currentDirection === "asc" ? "desc" : "asc" };
   }
-  return { key: nextKey, direction: nextKey === "date" || nextKey === "amount" ? "desc" : "asc" };
+  return { key: nextKey, direction: nextKey === "_updatedAt" || nextKey === "date" || nextKey === "amount" ? "desc" : "asc" };
 }
 
 interface DateGroup {
@@ -298,8 +299,8 @@ export function TransferTable({
   const [pageSize, setPageSize] = useState("10");
 
   const sortedTransfers = useMemo(() => [...transfers].sort((a, b) => {
-    const aValue = sortKey === "date" ? new Date(a.date).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
-    const bValue = sortKey === "date" ? new Date(b.date).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
+    const aValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(a[sortKey]).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
+    const bValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(b[sortKey]).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     return sortDirection === "asc" ? comparison : -comparison;
   }), [sortKey, sortDirection, transfers]);

@@ -105,7 +105,7 @@ describe("categoryItemSchema", () => {
   it("accepts a category with sub-categories", () => {
     const result = categoryItemSchema.safeParse({
       label: "Food",
-      subCategories: [{ label: "Groceries", deleted: false }],
+      subCategories: [{ label: "Groceries" }],
     });
     expect(result.success).toBe(true);
   });
@@ -131,7 +131,7 @@ describe("accountItemSchema", () => {
   it("accepts a valid account", () => {
     const result = accountItemSchema.safeParse({
       label: "HDFC",
-      subAccounts: [{ label: "Savings", deleted: false }],
+      subAccounts: [{ label: "Savings" }],
     });
     expect(result.success).toBe(true);
   });
@@ -191,8 +191,8 @@ describe("GROQ queries", () => {
     expect(TRANSACTION_BY_ID_QUERY).toContain("$id");
   });
 
-  it("SETTINGS_QUERY targets the singleton settings document", () => {
-    expect(SETTINGS_QUERY).toContain("singleton-settings");
+  it("SETTINGS_QUERY targets settings for one username", () => {
+    expect(SETTINGS_QUERY).toContain("username == $username");
     expect(SETTINGS_QUERY).toContain("categories");
     expect(SETTINGS_QUERY).toContain("accounts");
   });

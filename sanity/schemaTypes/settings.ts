@@ -1,11 +1,18 @@
+import { DEFAULT_USERNAME } from "../../lib/username";
 import { defineField, defineType } from "sanity";
 
 export const settingsSchema = defineType({
   name: "settings",
   title: "Settings",
   type: "document",
-  // Singleton — only one settings document ever exists
   fields: [
+    defineField({
+      name: "username",
+      title: "Username",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+      initialValue: DEFAULT_USERNAME,
+    }),
     defineField({
       name: "categories",
       title: "Categories",
@@ -28,12 +35,6 @@ export const settingsSchema = defineType({
               rows: 2,
             }),
             defineField({
-              name: "deleted",
-              title: "Deleted",
-              type: "boolean",
-              initialValue: false,
-            }),
-            defineField({
               name: "subCategories",
               title: "Sub-Categories",
               type: "array",
@@ -43,7 +44,6 @@ export const settingsSchema = defineType({
                   fields: [
                     defineField({ name: "label", type: "string" }),
                     defineField({ name: "description", type: "text", title: "Description" }),
-                    defineField({ name: "deleted", type: "boolean", initialValue: false }),
                   ],
                 },
               ],
@@ -52,13 +52,13 @@ export const settingsSchema = defineType({
           preview: {
             select: { title: "label", subCategories: "subCategories" },
             prepare({ title, subCategories }) {
-              const subs = subCategories as any[] | undefined;
-              const activeSubs = subs?.filter(s => !s.deleted) || [];
+              const subs = subCategories as unknown[] | undefined;
+              const activeSubs = subs ?? [];
               return {
                 title,
                 subtitle: activeSubs.length
                   ? `${activeSubs.length} sub-categor${activeSubs.length === 1 ? "y" : "ies"}`
-                  : "No active sub-categories",
+                  : "No sub-categories",
               };
             },
           },
@@ -87,12 +87,6 @@ export const settingsSchema = defineType({
               rows: 2,
             }),
             defineField({
-              name: "deleted",
-              title: "Deleted",
-              type: "boolean",
-              initialValue: false,
-            }),
-            defineField({
               name: "subAccounts",
               title: "Sub-Accounts",
               type: "array",
@@ -102,7 +96,6 @@ export const settingsSchema = defineType({
                   fields: [
                     defineField({ name: "label", type: "string" }),
                     defineField({ name: "description", type: "text", title: "Description" }),
-                    defineField({ name: "deleted", type: "boolean", initialValue: false }),
                   ],
                 },
               ],
@@ -111,13 +104,13 @@ export const settingsSchema = defineType({
           preview: {
             select: { title: "label", subAccounts: "subAccounts" },
             prepare({ title, subAccounts }) {
-              const subs = subAccounts as any[] | undefined;
-              const activeSubs = subs?.filter(s => !s.deleted) || [];
+              const subs = subAccounts as unknown[] | undefined;
+              const activeSubs = subs ?? [];
               return {
                 title,
                 subtitle: activeSubs.length
                   ? `${activeSubs.length} sub-account${activeSubs.length === 1 ? "" : "s"}`
-                  : "No active sub-accounts",
+                  : "No sub-accounts",
               };
             },
           },

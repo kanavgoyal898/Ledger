@@ -2,17 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { TRANSACTION_BY_ID_QUERY, transactionFormSchema } from "@/lib/types";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
 interface Params {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, { params }: Params) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const { id } = await params;
     const transaction = await sanityClient.fetch(
       TRANSACTION_BY_ID_QUERY,
-      { id },
+      { id, username },
       { next: { tags: ["transactions"] } }
     );
 
@@ -32,7 +35,11 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const { id } = await params;
+    const owned = await sanityClient.fetch(`*[_type == "transaction" && _id == $id && username == $username][0]._id`, { id, username }, { cache: "no-store" });
+    if (!owned) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     const body = await request.json();
     const parsed = transactionFormSchema.partial().safeParse(body);
 
@@ -64,9 +71,13 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: Params) {
+export async function DELETE(request: NextRequest, { params }: Params) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const { id } = await params;
+    const owned = await sanityClient.fetch(`*[_type == "transaction" && _id == $id && username == $username][0]._id`, { id, username }, { cache: "no-store" });
+    if (!owned) return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     await sanityWriteClient.delete(id);
     revalidateTag("transactions", "max");
     return NextResponse.json({ success: true });

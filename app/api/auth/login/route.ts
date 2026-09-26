@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sanityClient } from "@/lib/sanity";
 import { USER_QUERY, tokenResetToDays } from "@/lib/types";
 import type { User } from "@/lib/types";
+import { createSessionToken } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ ok: true });
     response.cookies.set("ledger_username", user.username, cookieOptions);
-    response.cookies.set("ledger_auth", "1", cookieOptions);
+    response.cookies.set("ledger_auth", createSessionToken(user.username, maxAge), cookieOptions);
 
     return response;
   } catch (error) {

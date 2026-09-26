@@ -3,16 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { addMonths, format, parseISO, startOfMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RECURRENCE_FREQUENCIES, type RecurringTransaction } from "@/lib/types";
+import { type RecurringTransaction, type Settings } from "@/lib/types";
 import { formatINR } from "@/lib/types";
 import { formatRecurrenceFrequency } from "@/lib/recurrence";
 import { NameColor } from "@/components/ui/name-color";
 import { Calendar } from "@/components/ui/calendar";
 import { occurrenceDates } from "@/lib/recurrence";
+import { RecurringTransactionSheet } from "@/components/transactions/RecurringTransactionSheet";
 
 function displayDate(value?: string) {
   return value ? format(parseISO(value.slice(0, 10)), "d MMM yyyy") : "No End Date";
@@ -27,24 +26,16 @@ function calendarTransactionsForRules(rules: RecurringTransaction[]) {
   return rules.flatMap((rule) => transactionDatesForCalendar(rule).map((date) => ({ date, rule })));
 }
 
-function RuleCard({ rule, onChanged, index = 0 }: { rule: RecurringTransaction; onChanged: () => void; index?: number }) {
+function RuleCard({ rule, settings, onChanged, index = 0 }: { rule: RecurringTransaction; settings: Settings; onChanged: () => void; index?: number }) {
   const [editing, setEditing] = useState(false);
-  const [amount, setAmount] = useState(String(rule.amount));
-  const [frequency, setFrequency] = useState(rule.frequency);
-  const [endDate, setEndDate] = useState(rule.endDate?.slice(0, 10) ?? "");
 
   async function patch(body: Record<string, unknown>) {
     await fetch(`/api/recurring/${rule._id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     onChanged();
   }
 
-  async function saveEdit() {
-    await patch({ amount, frequency, endDate: endDate || undefined });
-    setEditing(false);
-  }
-
   return (
-    <Card size="sm" className="h-full justify-between animate-fade-up delay-stagger transition-colors hover:bg-accent/10" style={{ "--stagger-delay": `${index * 50}ms` } as React.CSSProperties}>
+    <><Card size="sm" className="h-full justify-between animate-fade-up delay-stagger transition-colors hover:bg-accent/10" style={{ "--stagger-delay": `${index * 50}ms` } as React.CSSProperties}>
       <CardHeader className="flex flex-row items-start gap-3 pb-2">
         <div className="min-w-0">
           <CardTitle className="truncate text-sm">{rule.heading || rule.category}</CardTitle>
@@ -59,41 +50,24 @@ function RuleCard({ rule, onChanged, index = 0 }: { rule: RecurringTransaction; 
           <Badge variant="outline"><NameColor name={rule.account} />{rule.account}</Badge>
           {rule.subAccount && <Badge variant="secondary" className="text-xs"><NameColor name={rule.subAccount} />{rule.subAccount}</Badge>}
         </div>
-        {editing ? (
-          <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Amount</label>
-              <Input type="number" value={amount} onChange={(event) => setAmount(event.target.value)} aria-label="Amount" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">Frequency</label>
-              <Select value={frequency} onValueChange={(value) => setFrequency(value as typeof frequency)}><SelectTrigger className="w-full"><SelectValue placeholder="Select Frequency">{formatRecurrenceFrequency(frequency)}</SelectValue></SelectTrigger><SelectContent className="w-80 max-w-[calc(100vw-2rem)] p-1 lg:p-2">{RECURRENCE_FREQUENCIES.map((value) => <SelectItem key={value} value={value}>{formatRecurrenceFrequency(value)}</SelectItem>)}</SelectContent></Select>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium">End Date</label>
-              <Input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} aria-label="End Date" />
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-y py-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-y py-3">
             <div><p className="text-xs text-muted-foreground">Amount</p><p className="font-semibold">{formatINR(rule.amount)}</p></div>
             <div><p className="text-xs text-muted-foreground">Next</p><p className="font-medium">{rule.active ? displayDate(rule.nextOccurrence) : "Paused"}</p></div>
             <div><p className="text-xs text-muted-foreground">Starts</p><p>{displayDate(rule.startDate)}</p></div>
             <div><p className="text-xs text-muted-foreground">Ends</p><p>{displayDate(rule.endDate)}</p></div>
-          </div>
-        )}
+        </div>
         <div className="mt-auto flex flex-wrap gap-2 pt-1">
-          {editing ? <><Button size="sm" onClick={saveEdit}>Save</Button><Button size="sm" variant="outline" onClick={() => setEditing(false)}>Cancel</Button></> : <Button size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Button>}
-          {!editing && rule.active && <Button size="sm" variant="outline" onClick={() => patch({ active: false })}>Deactivate</Button>}
-          {!editing && !rule.active && <><Button size="sm" variant="outline" onClick={() => patch({ active: true, resumeMode: "backfill" })}>Reactivate & Backfill</Button><Button size="sm" variant="outline" onClick={() => patch({ active: true, resumeMode: "resume" })}>Resume Next</Button></>}
-          {!editing && <Button size="sm" variant="destructive" onClick={async () => { await fetch(`/api/recurring/${rule._id}`, { method: "DELETE" }); onChanged(); }}>Delete</Button>}
+          <Button size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Button>
+          {rule.active && <Button size="sm" variant="outline" onClick={() => patch({ active: false })}>Deactivate</Button>}
+          {!rule.active && <><Button size="sm" variant="outline" onClick={() => patch({ active: true, resumeMode: "backfill" })}>Reactivate & Backfill</Button><Button size="sm" variant="outline" onClick={() => patch({ active: true, resumeMode: "resume" })}>Resume Next</Button></>}
+          <Button size="sm" variant="destructive" onClick={async () => { await fetch(`/api/recurring/${rule._id}`, { method: "DELETE" }); onChanged(); }}>Delete</Button>
         </div>
       </CardContent>
-    </Card>
+    </Card>{editing && <RecurringTransactionSheet open onOpenChange={setEditing} rule={rule} settings={settings} onSuccess={onChanged} />}</>
   );
 }
 
-export function RecurringTransactionsSection() {
+export function RecurringTransactionsSection({ settings }: { settings: Settings }) {
   const [rules, setRules] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => { setLoading(true); const response = await fetch("/api/recurring"); setRules(await response.json()); setLoading(false); }, []);
@@ -193,7 +167,7 @@ export function RecurringTransactionsSection() {
                   className="relative hidden w-full! max-w-none p-4 [--cell-size:--spacing(7)] md:block"
                 />
         </div>
-        {["Active Recurring Transactions", "Inactive Recurring Transactions"].map((heading, sectionIndex) => { const items = sectionIndex === 0 ? active : inactive; return <section key={heading} className="space-y-3"><div className="flex items-center justify-between"><h3 className="font-semibold">{heading}</h3><span className="text-xs text-muted-foreground">{items.length}</span></div>{items.length === 0 ? <p className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">No {sectionIndex === 0 ? "Active" : "Inactive"} Recurring Transactions.</p> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{items.map((rule, index) => <RuleCard key={rule._id} rule={rule} onChanged={load} index={index} />)}</div>}</section>; })}
+        {["Active Recurring Transactions", "Inactive Recurring Transactions"].map((heading, sectionIndex) => { const items = sectionIndex === 0 ? active : inactive; return <section key={heading} className="space-y-3"><div className="flex items-center justify-between"><h3 className="font-semibold">{heading}</h3><span className="text-xs text-muted-foreground">{items.length}</span></div>{items.length === 0 ? <p className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">No {sectionIndex === 0 ? "Active" : "Inactive"} Recurring Transactions.</p> : <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{items.map((rule, index) => <RuleCard key={rule._id} rule={rule} settings={settings} onChanged={load} index={index} />)}</div>}</section>; })}
       </>}
     </section>
   );

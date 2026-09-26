@@ -11,8 +11,8 @@ export async function processRecurringTransaction(rule: RecurringTransaction, to
     .filter((occurrence) => !rule.resumeFrom || occurrence >= rule.resumeFrom);
 
   const existing = await sanityClient.fetch<{ recurringOccurrence?: string }[]>(
-    `*[_type == "transaction" && recurringTransactionId == $id]{ recurringOccurrence }`,
-    { id: rule._id },
+    `*[_type == "transaction" && recurringTransactionId == $id && username == $username]{ recurringOccurrence }`,
+    { id: rule._id, username: rule.username },
     { cache: "no-store" },
   );
   const existingKeys = new Set(existing.map((tx) => tx.recurringOccurrence));
@@ -24,6 +24,7 @@ export async function processRecurringTransaction(rule: RecurringTransaction, to
     for (const occurrence of missingOccurrences) {
       transaction.create({
         _type: "transaction",
+        username: rule.username,
         type: rule.type,
         date: `${occurrence}T00:00:00.000Z`,
         amount: rule.amount,

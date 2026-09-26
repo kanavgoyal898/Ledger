@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
 const DOC_TYPES_FILTER = `_type in ["transaction", "recurringTransaction"]`;
 
@@ -18,6 +19,8 @@ const getQuerySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const { searchParams } = new URL(request.url);
     const parsed = getQuerySchema.safeParse({ category: searchParams.get("category") ?? undefined });
 
@@ -29,16 +32,16 @@ export async function GET(request: NextRequest) {
     const subCategory = searchParams.get("subCategory");
 
     if (subCategory) {
-      const filter = `${DOC_TYPES_FILTER} && category == $category && subCategory == $subCategory`;
-      const count = await sanityClient.fetch<number>(`count(*[${filter}])`, { category, subCategory }, { cache: "no-store" });
+      const filter = `${DOC_TYPES_FILTER} && username == $username && category == $category && subCategory == $subCategory`;
+      const count = await sanityClient.fetch<number>(`count(*[${filter}])`, { username, category, subCategory }, { cache: "no-store" });
       return NextResponse.json({ count });
     }
 
     // Whole-category deletion — break the count down by sub-category so the
     // caller can require a distinct migration target for each one.
     const docs = await sanityClient.fetch<{ subCategory?: string }[]>(
-      `*[${DOC_TYPES_FILTER} && category == $category]{ subCategory }`,
-      { category },
+      `*[${DOC_TYPES_FILTER} && username == $username && category == $category]{ subCategory }`,
+      { username, category },
       { cache: "no-store" }
     );
 
@@ -84,6 +87,8 @@ const migrateBodySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const parsed = migrateBodySchema.safeParse(await request.json());
 
     if (!parsed.success) {
@@ -94,11 +99,11 @@ export async function POST(request: NextRequest) {
 
     for (const entry of parsed.data.migrations) {
       const filter = entry.fromSubCategory
-        ? `${DOC_TYPES_FILTER} && category == $category && subCategory == $subCategory`
-        : `${DOC_TYPES_FILTER} && category == $category && !defined(subCategory)`;
+        ? `${DOC_TYPES_FILTER} && username == $username && category == $category && subCategory == $subCategory`
+        : `${DOC_TYPES_FILTER} && username == $username && category == $category && !defined(subCategory)`;
       const params = entry.fromSubCategory
-        ? { category: entry.fromCategory, subCategory: entry.fromSubCategory }
-        : { category: entry.fromCategory };
+        ? { username, category: entry.fromCategory, subCategory: entry.fromSubCategory }
+        : { username, category: entry.fromCategory };
 
       const count = await sanityClient.fetch<number>(`count(*[${filter}])`, params, { cache: "no-store" });
       if (count === 0) continue;

@@ -334,10 +334,10 @@ export function TransactionSheet({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
-                      {settings.categories?.filter(c => !c.deleted || c.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
+                      {settings.categories?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
                         <SelectItem key={c._key} value={c.label}>
                           <NameColor name={c.label} />
-                          {c.label} {c.deleted ? "(Deleted)" : ""}
+                          {c.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -372,10 +372,10 @@ export function TransactionSheet({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
-                      {selectedCategory?.subCategories?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
+                      {selectedCategory?.subCategories?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
                           <NameColor name={s.label} />
-                          {s.label} {s.deleted ? "(Deleted)" : ""}
+                          {s.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -412,10 +412,10 @@ export function TransactionSheet({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
-                      {settings.accounts?.filter(a => !a.deleted || a.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((a) => (
+                      {settings.accounts?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((a) => (
                         <SelectItem key={a._key} value={a.label}>
                           <NameColor name={a.label} />
-                          {a.label} {a.deleted ? "(Deleted)" : ""}
+                          {a.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -450,10 +450,10 @@ export function TransactionSheet({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent align="start" className="p-1 lg:p-2" alignItemWithTrigger={false}>
-                      {selectedAccount?.subAccounts?.filter(s => !s.deleted || s.label === field.value).sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
+                      {selectedAccount?.subAccounts?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((s) => (
                         <SelectItem key={s.label} value={s.label}>
                           <NameColor name={s.label} />
-                          {s.label} {s.deleted ? "(Deleted)" : ""}
+                          {s.label}
                         </SelectItem>
                       ))}
                     </SelectContent>

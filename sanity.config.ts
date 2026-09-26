@@ -26,17 +26,11 @@ export default defineConfig({
             S.listItem()
               .title("Transfers")
               .child(S.documentTypeList("transfer")),
-            // Settings as a singleton
             S.listItem()
               .title("Settings")
-              .child(
-                S.document()
-                  .schemaType("settings")
-                  .documentId("singleton-settings")
-              ),
+              .child(S.documentTypeList("settings")),
           ]),
     }),
     visionTool(),
   ],
 });
-

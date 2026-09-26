@@ -7,14 +7,12 @@ import { z } from "zod";
 export interface SubItem {
   label: string;
   description?: string;
-  deleted: boolean;
 }
 
 export interface CategoryItem {
   _key: string;
   label: string;
   description?: string;
-  deleted: boolean;
   subCategories?: SubItem[];
 }
 
@@ -22,13 +20,13 @@ export interface AccountItem {
   _key: string;
   label: string;
   description?: string;
-  deleted: boolean;
   subAccounts?: SubItem[];
 }
 
 export interface Settings {
   _id: string;
   _type: "settings";
+  username: string;
   categories?: CategoryItem[];
   accounts?: AccountItem[];
 }
@@ -64,6 +62,7 @@ export const tokenResetToSeconds = tokenResetToDays;
 export interface Transaction {
   _id: string;
   _type: "transaction";
+  username: string;
   _createdAt: string;
   _updatedAt: string;
   type: "income" | "expense";
@@ -103,6 +102,7 @@ export type RecurrenceFrequency = (typeof RECURRENCE_FREQUENCIES)[number];
 export interface RecurringTransaction {
   _id: string;
   _type: "recurringTransaction";
+  username: string;
   _createdAt: string;
   _updatedAt: string;
   type: "income" | "expense";
@@ -124,6 +124,7 @@ export interface RecurringTransaction {
 export interface Transfer {
   _id: string;
   _type: "transfer";
+  username: string;
   _createdAt: string;
   _updatedAt: string;
   date: string;
@@ -196,18 +197,15 @@ export type RecurringTransactionFormValues = z.infer<typeof recurringTransaction
 
 export const subItemSchema = z.object({
   label: z.string().min(1),
-  deleted: z.boolean().default(false),
 });
 
 export const categoryItemSchema = z.object({
   label: z.string().min(1, "Category name is required"),
-  deleted: z.boolean().default(false),
   subCategories: z.array(subItemSchema).optional().default([]),
 });
 
 export const accountItemSchema = z.object({
   label: z.string().min(1, "Account name is required"),
-  deleted: z.boolean().default(false),
   subAccounts: z.array(subItemSchema).optional().default([]),
 });
 
@@ -216,23 +214,24 @@ export const accountItemSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const TRANSFERS_QUERY = `
-  *[_type == "transfer"] | order(date desc) {
-    _id, _type, _createdAt, _updatedAt,
+  *[_type == "transfer" && username == $username] | order(_updatedAt desc) {
+    _id, _type, username, _createdAt, _updatedAt,
     date, amount, fromAccount, fromSubAccount, toAccount, toSubAccount, heading, description
   }
 `;
 
 export const TRANSFER_BY_ID_QUERY = `
-  *[_type == "transfer" && _id == $id][0] {
-    _id, _type, _createdAt, _updatedAt,
+  *[_type == "transfer" && _id == $id && username == $username][0] {
+    _id, _type, username, _createdAt, _updatedAt,
     date, amount, fromAccount, fromSubAccount, toAccount, toSubAccount, heading, description
   }
 `;
 
 export const TRANSACTIONS_QUERY = `
-  *[_type == "transaction"] | order(date desc) {
+  *[_type == "transaction" && username == $username] | order(_updatedAt desc) {
     _id,
     _type,
+    username,
     _createdAt,
     _updatedAt,
     type,
@@ -251,9 +250,10 @@ export const TRANSACTIONS_QUERY = `
 `;
 
 export const TRANSACTION_BY_ID_QUERY = `
-  *[_type == "transaction" && _id == $id][0] {
+  *[_type == "transaction" && _id == $id && username == $username][0] {
     _id,
     _type,
+    username,
     _createdAt,
     _updatedAt,
     type,
@@ -271,29 +271,26 @@ export const TRANSACTION_BY_ID_QUERY = `
 `;
 
 export const SETTINGS_QUERY = `
-  *[_type == "settings" && _id == "singleton-settings"][0] {
+  *[_type == "settings" && username == $username][0] {
     _id,
     _type,
+    username,
     categories[] {
       _key,
       label,
       description,
-      deleted,
       subCategories[] {
         label,
-        description,
-        deleted
+        description
       }
     },
     accounts[] {
       _key,
       label,
       description,
-      deleted,
       subAccounts[] {
         label,
-        description,
-        deleted
+        description
       }
     }
   }
@@ -303,9 +300,9 @@ export const USER_QUERY = `
   *[_type == "user" && username == $username][0] {
     _id,
     _type,
+    username,
     firstName,
     lastName,
-    username,
     "profilePicture": profilePicture.asset->url,
     mobileNumber,
     email,

@@ -1,3 +1,4 @@
+import { DEFAULT_USERNAME } from "../../lib/username";
 import { defineField, defineType } from "sanity";
 
 export const transactionSchema = defineType({
@@ -5,6 +6,13 @@ export const transactionSchema = defineType({
   title: "Transaction",
   type: "document",
   fields: [
+    defineField({
+      name: "username",
+      title: "Username",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+      initialValue: DEFAULT_USERNAME,
+    }),
     defineField({
       name: "type",
       title: "Type",

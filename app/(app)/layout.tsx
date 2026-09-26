@@ -1,11 +1,15 @@
 import { FloatingDeck } from "@/components/layout/FloatingDeck";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { cookies } from "next/headers";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  if (!getAuthenticatedUsername({ cookies: await cookies() })) return <>{children}</>;
+
   return (
     <TooltipProvider>
       <div className="flex min-h-dvh w-full flex-col bg-background">

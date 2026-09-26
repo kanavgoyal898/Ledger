@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("next/cache", () => ({ revalidateTag: vi.fn() }));
+vi.mock("@/lib/auth", () => ({
+  getAuthenticatedUsername: (request?: NextRequest) =>
+    request?.cookies.get("ledger_username")?.value ?? "kanavgoyal898",
+}));
+
 // ---------------------------------------------------------------------------
 // Mock next-sanity and @sanity/client so tests don't need real credentials
 // ---------------------------------------------------------------------------
@@ -106,6 +112,18 @@ describe("POST /api/transactions", () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body._id).toBe("new-id");
+    expect(sanityWriteClient.create).toHaveBeenCalledWith(expect.objectContaining({ username: "kanavgoyal898" }));
+  });
+
+  it("uses the signed-in username instead of a submitted username", async () => {
+    (sanityWriteClient.create as ReturnType<typeof vi.fn>).mockResolvedValue({ _id: "new-id" });
+    const req = new NextRequest("http://localhost/api/transactions", {
+      method: "POST",
+      body: JSON.stringify({ ...validPayload, username: "spoofed" }),
+      headers: { "Content-Type": "application/json", Cookie: "ledger_username=alice" },
+    });
+    expect((await postTransaction(req)).status).toBe(201);
+    expect(sanityWriteClient.create).toHaveBeenCalledWith(expect.objectContaining({ username: "alice" }));
   });
 
   it("returns 400 for invalid payload", async () => {
@@ -155,6 +173,7 @@ describe("DELETE /api/transactions/[id]", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("deletes and returns success", async () => {
+    (sanityClient.fetch as ReturnType<typeof vi.fn>).mockResolvedValue("abc123");
     (sanityWriteClient.delete as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
     const req = new NextRequest("http://localhost/api/transactions/abc123", { method: "DELETE" });
@@ -194,5 +213,27 @@ describe("GET /api/settings", () => {
     const body = await res.json();
     expect(body.categories).toEqual([]);
     expect(body.accounts).toEqual([]);
+  });
+});
+
+// Hard deletion must not turn shifted sub-item positions into transaction renames.
+describe("PATCH /api/settings hard deletion", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it.each([
+    ["categories", "subCategories"],
+    ["accounts", "subAccounts"],
+  ])("removes a sub-item from %s without renaming history", async (field, subField) => {
+    const parent = { _key: "parent", label: "Parent", [subField]: [{ label: "First" }, { label: "Second" }] };
+    const updated = { ...parent, [subField]: [{ label: "Second" }] };
+    vi.mocked(sanityClient.fetch).mockResolvedValue({ _id: "settings", [field]: [parent] });
+    const response = await patchSettings(new NextRequest("http://localhost/api/settings", {
+      method: "PATCH",
+      body: JSON.stringify({ [field]: [updated] }),
+    }));
+    expect(response.status).toBe(200);
+    expect(sanityClient.fetch).toHaveBeenCalledTimes(1);
+    const patch = vi.mocked(sanityWriteClient.patch).mock.results[0].value;
+    expect(patch.set).toHaveBeenCalledWith(expect.objectContaining({ [field]: [updated] }));
   });
 });

@@ -1,3 +1,4 @@
+import { DEFAULT_USERNAME } from "../../lib/username";
 import { defineField, defineType } from "sanity";
 
 export const recurringTransactionSchema = defineType({
@@ -5,6 +6,13 @@ export const recurringTransactionSchema = defineType({
   title: "Recurring Transaction",
   type: "document",
   fields: [
+    defineField({
+      name: "username",
+      title: "Username",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+      initialValue: DEFAULT_USERNAME,
+    }),
     defineField({ name: "type", title: "Type", type: "string", options: { list: [
       { title: "Expense", value: "expense" }, { title: "Income", value: "income" },
     ] }, validation: (Rule) => Rule.required() }),

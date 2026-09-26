@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { TRANSFERS_QUERY, transferFormSchema } from "@/lib/types";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const transfers = await sanityClient.fetch(TRANSFERS_QUERY, {}, { next: { tags: ["transfers"] } });
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const transfers = await sanityClient.fetch(TRANSFERS_QUERY, { username }, { next: { tags: ["transfers"] } });
     return NextResponse.json(transfers);
   } catch (error) {
     console.error("GET /api/transfers error:", error);
@@ -15,6 +18,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const parsed = transferFormSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
@@ -22,6 +27,7 @@ export async function POST(request: NextRequest) {
     const { date, amount, fromAccount, fromSubAccount, toAccount, toSubAccount, heading, description } = parsed.data;
     const doc = await sanityWriteClient.create({
       _type: "transfer",
+      username,
       date,
       amount,
       fromAccount,

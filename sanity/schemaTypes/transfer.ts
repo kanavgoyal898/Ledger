@@ -1,3 +1,4 @@
+import { DEFAULT_USERNAME } from "../../lib/username";
 import { defineField, defineType } from "sanity";
 
 export const transferSchema = defineType({
@@ -5,6 +6,13 @@ export const transferSchema = defineType({
   title: "Transfer",
   type: "document",
   fields: [
+    defineField({
+      name: "username",
+      title: "Username",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+      initialValue: DEFAULT_USERNAME,
+    }),
     defineField({
       name: "date", title: "Date", type: "datetime",
       validation: (Rule) => Rule.required(),

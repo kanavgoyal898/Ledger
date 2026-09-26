@@ -3,22 +3,24 @@ import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { SETTINGS_QUERY } from "@/lib/types";
 import type { CategoryItem, AccountItem, Settings } from "@/lib/types";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
-const SETTINGS_DOC_ID = "singleton-settings";
-
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const settings = await sanityClient.fetch(
       SETTINGS_QUERY,
-      {},
+      { username },
       { next: { tags: ["settings"] } }
     );
 
     // Return empty settings if singleton doesn't exist yet
     if (!settings) {
       return NextResponse.json({
-        _id: SETTINGS_DOC_ID,
+        _id: "new-settings",
         _type: "settings",
+        username,
         categories: [],
         accounts: [],
       });
@@ -70,10 +72,11 @@ function buildSubCategoryRenameMap(
     const catLabel = newCat.label;
     const subRenames = new Map<string, string>();
 
-    // Sub-items have no _key — detect renames by positional diff
+    // Deletion shifts positions; only compare positions for edits of equal-length lists.
     const oldSubs = oldCat.subCategories ?? [];
     const newSubs = newCat.subCategories ?? [];
-    for (let i = 0; i < Math.min(oldSubs.length, newSubs.length); i++) {
+    if (oldSubs.length !== newSubs.length) continue;
+    for (let i = 0; i < oldSubs.length; i++) {
       if (oldSubs[i].label !== newSubs[i].label) {
         subRenames.set(oldSubs[i].label, newSubs[i].label);
       }
@@ -118,7 +121,8 @@ function buildSubAccountRenameMap(
 
     const oldSubs = oldAcc.subAccounts ?? [];
     const newSubs = newAcc.subAccounts ?? [];
-    for (let i = 0; i < Math.min(oldSubs.length, newSubs.length); i++) {
+    if (oldSubs.length !== newSubs.length) continue;
+    for (let i = 0; i < oldSubs.length; i++) {
       if (oldSubs[i].label !== newSubs[i].label) {
         subRenames.set(oldSubs[i].label, newSubs[i].label);
       }
@@ -136,11 +140,13 @@ function buildSubAccountRenameMap(
 // ---------------------------------------------------------------------------
 
 async function applyTransactionRenames({
+  username,
   categoryRenames,
   subCategoryRenames,
   accountRenames,
   subAccountRenames,
 }: {
+  username: string;
   categoryRenames: Map<string, string>;
   subCategoryRenames: Map<string, Map<string, string>>;
   accountRenames: Map<string, string>;
@@ -149,8 +155,8 @@ async function applyTransactionRenames({
   // For each category rename, batch all patches into a single transaction commit
   for (const [oldLabel, newLabel] of categoryRenames) {
     const txs: { _id: string }[] = await sanityClient.fetch(
-      `*[_type == "transaction" && category == $cat]{_id}`,
-      { cat: oldLabel },
+      `*[_type in ["transaction", "recurringTransaction"] && username == $username && category == $cat]{_id}`,
+      { username, cat: oldLabel },
       { cache: "no-store" }
     );
     if (txs.length > 0) {
@@ -167,8 +173,8 @@ async function applyTransactionRenames({
     const effectiveCatLabel = catLabel;
     for (const [oldSubLabel, newSubLabel] of subMap) {
       const txs: { _id: string }[] = await sanityClient.fetch(
-        `*[_type == "transaction" && category == $cat && subCategory == $sub]{_id}`,
-        { cat: effectiveCatLabel, sub: oldSubLabel },
+        `*[_type in ["transaction", "recurringTransaction"] && username == $username && category == $cat && subCategory == $sub]{_id}`,
+        { username, cat: effectiveCatLabel, sub: oldSubLabel },
         { cache: "no-store" }
       );
       if (txs.length > 0) {
@@ -184,14 +190,30 @@ async function applyTransactionRenames({
   // For each account rename, batch all patches into a single transaction commit
   for (const [oldLabel, newLabel] of accountRenames) {
     const txs: { _id: string }[] = await sanityClient.fetch(
-      `*[_type == "transaction" && account == $acc]{_id}`,
-      { acc: oldLabel },
+      `*[_type in ["transaction", "recurringTransaction"] && username == $username && account == $acc]{_id}`,
+      { username, acc: oldLabel },
       { cache: "no-store" }
     );
     if (txs.length > 0) {
       const transaction = sanityWriteClient.transaction();
       for (const tx of txs) {
         transaction.patch(tx._id, (p) => p.set({ account: newLabel }));
+      }
+      await transaction.commit();
+    }
+
+    const transfers: { _id: string; fromAccount: string; toAccount: string }[] = await sanityClient.fetch(
+      `*[_type == "transfer" && username == $username && (fromAccount == $acc || toAccount == $acc)]{_id, fromAccount, toAccount}`,
+      { username, acc: oldLabel },
+      { cache: "no-store" }
+    );
+    if (transfers.length > 0) {
+      const transaction = sanityWriteClient.transaction();
+      for (const transfer of transfers) {
+        transaction.patch(transfer._id, (patch) => patch.set({
+          ...(transfer.fromAccount === oldLabel ? { fromAccount: newLabel } : {}),
+          ...(transfer.toAccount === oldLabel ? { toAccount: newLabel } : {}),
+        }));
       }
       await transaction.commit();
     }
@@ -202,14 +224,30 @@ async function applyTransactionRenames({
     const effectiveAccLabel = accLabel;
     for (const [oldSubLabel, newSubLabel] of subMap) {
       const txs: { _id: string }[] = await sanityClient.fetch(
-        `*[_type == "transaction" && account == $acc && subAccount == $sub]{_id}`,
-        { acc: effectiveAccLabel, sub: oldSubLabel },
+        `*[_type in ["transaction", "recurringTransaction"] && username == $username && account == $acc && subAccount == $sub]{_id}`,
+        { username, acc: effectiveAccLabel, sub: oldSubLabel },
         { cache: "no-store" }
       );
       if (txs.length > 0) {
         const transaction = sanityWriteClient.transaction();
         for (const tx of txs) {
           transaction.patch(tx._id, (p) => p.set({ subAccount: newSubLabel }));
+        }
+        await transaction.commit();
+      }
+
+      const transfers: { _id: string; fromAccount: string; fromSubAccount?: string; toAccount: string; toSubAccount?: string }[] = await sanityClient.fetch(
+        `*[_type == "transfer" && username == $username && ((fromAccount == $acc && fromSubAccount == $sub) || (toAccount == $acc && toSubAccount == $sub))]{_id, fromAccount, fromSubAccount, toAccount, toSubAccount}`,
+        { username, acc: effectiveAccLabel, sub: oldSubLabel },
+        { cache: "no-store" }
+      );
+      if (transfers.length > 0) {
+        const transaction = sanityWriteClient.transaction();
+        for (const transfer of transfers) {
+          transaction.patch(transfer._id, (patch) => patch.set({
+            ...(transfer.fromAccount === effectiveAccLabel && transfer.fromSubAccount === oldSubLabel ? { fromSubAccount: newSubLabel } : {}),
+            ...(transfer.toAccount === effectiveAccLabel && transfer.toSubAccount === oldSubLabel ? { toSubAccount: newSubLabel } : {}),
+          }));
         }
         await transaction.commit();
       }
@@ -223,12 +261,14 @@ async function applyTransactionRenames({
 
 export async function PATCH(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const body = await request.json();
 
     // Fetch current settings to diff for renames
     const currentSettings: Settings | null = await sanityClient.fetch(
       SETTINGS_QUERY,
-      {},
+      { username },
       { cache: "no-store" }
     );
 
@@ -248,28 +288,25 @@ export async function PATCH(request: NextRequest) {
       subAccountRenames.size > 0;
 
     // Save settings document
-    const existing = await sanityClient.fetch(
-      `*[_type == "settings" && _id == "${SETTINGS_DOC_ID}"][0]._id`,
-      {}
-    );
-
     let savedSettings;
-    if (existing) {
+    const settingsPatch = { categories: newCategories, accounts: newAccounts };
+    if (currentSettings) {
       savedSettings = await sanityWriteClient
-        .patch(SETTINGS_DOC_ID)
-        .set(body)
+        .patch(currentSettings._id)
+        .set(settingsPatch)
         .commit();
     } else {
-      savedSettings = await sanityWriteClient.createOrReplace({
-        _id: SETTINGS_DOC_ID,
+      savedSettings = await sanityWriteClient.create({
         _type: "settings",
-        ...body,
+        username,
+        ...settingsPatch,
       });
     }
 
     // Cascade-rename transactions after settings are saved
     if (hasRenames) {
       await applyTransactionRenames({
+        username,
         categoryRenames,
         subCategoryRenames,
         accountRenames,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { tokenResetToDays, USER_QUERY } from "@/lib/types";
 import type { TokenReset, User } from "@/lib/types";
+import { createSessionToken, getAuthenticatedUsername } from "@/lib/auth";
 
 const tokenResetValues: TokenReset[] = [
   "1_day",
@@ -26,7 +27,7 @@ function safeUser(user: User) {
 
 export async function GET(request: NextRequest) {
   try {
-    const username = request.cookies.get("ledger_username")?.value;
+    const username = getAuthenticatedUsername(request);
 
     if (!username) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const currentUsername = request.cookies.get("ledger_username")?.value;
+    const currentUsername = getAuthenticatedUsername(request);
     if (!currentUsername) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
@@ -92,6 +93,19 @@ export async function PATCH(request: NextRequest) {
       if (existingUser && existingUser._id !== user._id) {
         return NextResponse.json({ error: "That username is already in use" }, { status: 409 });
       }
+
+      const ownedDocuments = await sanityClient.fetch<{ _id: string }[]>(
+        `*[_type in ["transaction", "transfer", "settings", "recurringTransaction"] && username == $currentUsername]{ _id }`,
+        { currentUsername },
+        { cache: "no-store" }
+      );
+      if (ownedDocuments.length > 0) {
+        const ownershipUpdate = sanityWriteClient.transaction();
+        for (const document of ownedDocuments) {
+          ownershipUpdate.patch(document._id, (patch) => patch.set({ username }));
+        }
+        await ownershipUpdate.commit();
+      }
     }
 
     await sanityWriteClient
@@ -122,6 +136,13 @@ export async function PATCH(request: NextRequest) {
     );
     const maxAge = tokenResetToDays(tokenReset);
     response.cookies.set("ledger_username", username, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      ...(maxAge !== undefined ? { maxAge } : {}),
+    });
+    response.cookies.set("ledger_auth", createSessionToken(username, maxAge), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

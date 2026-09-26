@@ -46,6 +46,7 @@ interface TransactionTableProps {
 }
 
 export type TransactionSortKey =
+  | "_updatedAt"
   | "date"
   | "heading"
   | "type"
@@ -54,6 +55,7 @@ export type TransactionSortKey =
   | "amount";
 
 export const transactionSortKeyLabels: Record<TransactionSortKey, string> = {
+  _updatedAt: "Last modified",
   date: "Date",
   heading: "Heading",
   type: "Type",
@@ -70,7 +72,7 @@ export function nextTransactionSort(
   if (currentKey === nextKey) {
     return { key: currentKey, direction: currentDirection === "asc" ? "desc" : "asc" };
   }
-  return { key: nextKey, direction: nextKey === "date" || nextKey === "amount" ? "desc" : "asc" };
+  return { key: nextKey, direction: nextKey === "_updatedAt" || nextKey === "date" || nextKey === "amount" ? "desc" : "asc" };
 }
 
 interface DateGroup {
@@ -389,8 +391,8 @@ export function TransactionTable({
   const [pageSize, setPageSize] = useState("10");
 
   const sortedTransactions = useMemo(() => [...transactions].sort((a, b) => {
-    const aValue = sortKey === "date" ? new Date(a.date).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
-    const bValue = sortKey === "date" ? new Date(b.date).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
+    const aValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(a[sortKey]).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
+    const bValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(b[sortKey]).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     return sortDirection === "asc" ? comparison : -comparison;
   }), [sortKey, sortDirection, transactions]);

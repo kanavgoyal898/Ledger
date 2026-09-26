@@ -63,22 +63,15 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
 
     const existingIndex = items.findIndex(c => c.label.toLowerCase() === label.toLowerCase());
 
-    let updated;
     if (existingIndex >= 0) {
-      if (!items[existingIndex].deleted) {
-        setNewLabel("");
-        setNewDesc("");
-        return; // Already active
-      }
-      // Silently reverse soft-delete
-      updated = [...items];
-      updated[existingIndex] = { ...updated[existingIndex], deleted: false, description: newDesc.trim() || undefined };
-    } else {
-      updated = [
-        ...items,
-        { _key: crypto.randomUUID(), label, description: newDesc.trim() || undefined, deleted: false, subCategories: [] },
-      ];
+      setNewLabel("");
+      setNewDesc("");
+      return;
     }
+    const updated = [
+      ...items,
+      { _key: crypto.randomUUID(), label, description: newDesc.trim() || undefined, subCategories: [] },
+    ];
 
     save(updated);
     setNewLabel("");
@@ -86,7 +79,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
   }
 
   async function removeCategory(key: string) {
-    await save(items.map((c) => c._key === key ? { ...c, deleted: true } : c));
+    await save(items.filter((c) => c._key !== key));
   }
 
   function requestRemoveCategory(cat: CategoryItem) {
@@ -128,15 +121,8 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
         const existingSubs = c.subCategories ?? [];
         const existingIndex = existingSubs.findIndex(s => s.label.toLowerCase() === subLabel.toLowerCase());
 
-        let newSubs;
-        if (existingIndex >= 0) {
-          if (!existingSubs[existingIndex].deleted) return c;
-          // Silently reverse soft-delete
-          newSubs = [...existingSubs];
-          newSubs[existingIndex] = { ...newSubs[existingIndex], deleted: false, description: sub.description?.trim() || undefined };
-        } else {
-          newSubs = [...existingSubs, { label: subLabel, description: sub.description?.trim() || undefined, deleted: false }];
-        }
+        if (existingIndex >= 0) return c;
+        const newSubs = [...existingSubs, { label: subLabel, description: sub.description?.trim() || undefined }];
         return { ...c, subCategories: newSubs };
       }
       return c;
@@ -151,7 +137,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
       if (c._key === parentKey) {
         return {
           ...c,
-          subCategories: (c.subCategories ?? []).map(s => s.label === subLabel ? { ...s, deleted: true } : s)
+          subCategories: (c.subCategories ?? []).filter(s => s.label !== subLabel)
         };
       }
       return c;
@@ -193,8 +179,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const activeItems = items
-    .filter(c => !c.deleted)
+  const activeItems = [...items]
     .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
@@ -236,8 +221,7 @@ export function CategoryManager({ categories, onUpdate }: CategoryManagerProps) 
 
         <div className="flex flex-col gap-2">
           {activeItems.map((cat) => {
-            const activeSubs = (cat.subCategories ?? [])
-              .filter(s => !s.deleted)
+            const activeSubs = (cat.subCategories ?? []).slice()
               .sort((a, b) => a.label.localeCompare(b.label));
             const catEditId = `cat:${cat._key}`;
             const isEditingCat = editingId === catEditId;

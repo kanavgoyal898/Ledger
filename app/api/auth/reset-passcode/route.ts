@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { USER_QUERY } from "@/lib/types";
 import type { User } from "@/lib/types";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const username = request.cookies.get("ledger_username")?.value;
+    const username = getAuthenticatedUsername(request);
     if (!username) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }

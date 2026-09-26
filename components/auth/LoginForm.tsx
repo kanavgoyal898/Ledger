@@ -2,6 +2,8 @@
 
 import { useRef, useState, KeyboardEvent, ClipboardEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export function LoginForm() {
@@ -70,7 +72,14 @@ export function LoginForm() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-4 text-foreground scrollbar-hide">
+    <div className="relative flex flex-1 items-center justify-center bg-background px-4 py-20 text-foreground scrollbar-hide">
+      <Link
+        href="/"
+        className="absolute left-4 top-4 inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to home
+      </Link>
       <div className="absolute right-4 top-4">
         <ThemeToggle className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground" />
       </div>

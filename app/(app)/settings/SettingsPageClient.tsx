@@ -9,6 +9,7 @@ export default function SettingsPageClient() {
   const [settings, setSettings] = useState<Settings>({
     _id: "singleton-settings",
     _type: "settings",
+    username: "kanavgoyal898",
     categories: [],
     accounts: [],
   });

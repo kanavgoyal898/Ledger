@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { sanityClient, sanityWriteClient } from "@/lib/sanity";
 import { transactionFormSchema } from "@/lib/types";
+import { getAuthenticatedUsername } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const subCategory = searchParams.get("subCategory");
@@ -15,8 +18,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const type = searchParams.get("type"); // "income" | "expense" | null
 
-    let query = `*[_type == "transaction"`;
-    const params: Record<string, string> = {};
+    let query = `*[_type == "transaction" && username == $username`;
+    const params: Record<string, string> = { username };
 
     if (type) {
       query += ` && type == $type`;
@@ -51,8 +54,8 @@ export async function GET(request: NextRequest) {
       params.search = `*${search}*`;
     }
 
-    query += `] | order(date desc) {
-      _id, _type, _createdAt, _updatedAt,
+    query += `] | order(_updatedAt desc) {
+      _id, _type, username, _createdAt, _updatedAt,
       type, date, amount, category, subCategory,
       account, subAccount, heading, description,
       recurringTransactionId, recurringOccurrence
@@ -74,6 +77,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const username = getAuthenticatedUsername(request);
+    if (!username) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const body = await request.json();
     const parsed = transactionFormSchema.safeParse(body);
 
@@ -89,6 +94,7 @@ export async function POST(request: NextRequest) {
 
     const doc = await sanityWriteClient.create({
       _type: "transaction",
+      username,
       type,
       date,
       amount,

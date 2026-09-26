@@ -95,6 +95,7 @@ function TransactionsPageContent() {
   const [settings, setSettings] = useState<Settings>({
     _id: "singleton-settings",
     _type: "settings",
+    username: "kanavgoyal898",
     categories: [],
     accounts: [],
   });
@@ -112,7 +113,7 @@ function TransactionsPageContent() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Sorting — surfaced on mobile next to the Export button
-  const [sortKey, setSortKey] = useState<TransactionSortKey>("date");
+  const [sortKey, setSortKey] = useState<TransactionSortKey>("_updatedAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const [loading, setLoading] = useState(true);
@@ -290,14 +291,14 @@ function TransactionsPageContent() {
   const subCategories = useMemo(
     () => settings.categories
       ?.filter((category) => filterCategory === "all" || category.label === filterCategory)
-      .flatMap((category) => category.subCategories?.filter((subCategory) => !subCategory.deleted) ?? [])
+      .flatMap((category) => category.subCategories?.slice() ?? [])
       .sort((a, b) => a.label.localeCompare(b.label)) ?? [],
     [settings.categories, filterCategory],
   );
   const subAccounts = useMemo(
     () => settings.accounts
       ?.filter((account) => filterAccount === "all" || account.label === filterAccount)
-      .flatMap((account) => account.subAccounts?.filter((subAccount) => !subAccount.deleted) ?? [])
+      .flatMap((account) => account.subAccounts?.slice() ?? [])
       .sort((a, b) => a.label.localeCompare(b.label)) ?? [],
     [settings.accounts, filterAccount],
   );
@@ -391,7 +392,7 @@ function TransactionsPageContent() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FilterSelect id="filter-category" label="Category" value={filterCategory} onValueChange={(value) => { setFilterCategory(value); setFilterSubCategory("all"); }}>
               <SelectItem value="all">All</SelectItem>
-              {settings.categories?.filter((category) => !category.deleted).sort((a, b) => a.label.localeCompare(b.label)).map((category) => (
+              {settings.categories?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((category) => (
                 <SelectItem key={category._key} value={category.label}><NameColor name={category.label} />{category.label}</SelectItem>
               ))}
               </FilterSelect>
@@ -403,7 +404,7 @@ function TransactionsPageContent() {
 
               <FilterSelect id="filter-account" label="Account" value={filterAccount} onValueChange={(value) => { setFilterAccount(value); setFilterSubAccount("all"); }}>
               <SelectItem value="all">All</SelectItem>
-              {settings.accounts?.filter((account) => !account.deleted).sort((a, b) => a.label.localeCompare(b.label)).map((account) => (
+              {settings.accounts?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((account) => (
                 <SelectItem key={account._key} value={account.label}><NameColor name={account.label} />{account.label}</SelectItem>
               ))}
               </FilterSelect>
@@ -427,6 +428,7 @@ function TransactionsPageContent() {
               </SelectValue>
             </SelectTrigger>
             <SelectContent align="start" alignItemWithTrigger={false} className="p-1 lg:p-2">
+              <SelectItem value="_updatedAt">Last modified</SelectItem>
               <SelectItem value="date">Date</SelectItem>
               <SelectItem value="heading">Heading</SelectItem>
               <SelectItem value="type">Type</SelectItem>
@@ -472,7 +474,7 @@ function TransactionsPageContent() {
         />
       )}
 
-      <RecurringTransactionsSection />
+      <RecurringTransactionsSection settings={settings} />
       <TransferSection settings={settings} />
 
       {/* Create / Edit Sheet */}
