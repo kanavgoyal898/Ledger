@@ -26,6 +26,7 @@ import {
   type Transfer, type TransferFormValues, type TransferFormInput,
   type Settings, transferFormSchema,
 } from "@/lib/types";
+import { parseLedgerDate } from "@/lib/ledger-date";
 
 interface TransferSheetProps {
   open: boolean;
@@ -193,11 +194,11 @@ export function TransferSheet({ open, onOpenChange, transfer, settings, onSucces
                     <FormControl>
                       <PopoverTrigger render={<Button variant="outline" className="w-full justify-start text-left font-normal" />}>
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(new Date(field.value), "PPP") : "Pick a date"}
+                        {field.value ? format(parseLedgerDate(field.value), "PPP") : "Pick a date"}
                       </PopoverTrigger>
                     </FormControl>
                     <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(d) => field.onChange(d ? d.toISOString() : "")} />
+                      <Calendar mode="single" selected={field.value ? parseLedgerDate(field.value) : undefined} onSelect={(d) => field.onChange(d ? format(d, "yyyy-MM-dd") : "")} />
                     </PopoverContent>
                   </Popover>
                   <FormMessage />

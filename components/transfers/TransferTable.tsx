@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { type Transfer, formatINR } from "@/lib/types";
+import { compareLedgerDateThenModified, ledgerDateKey, parseLedgerDate } from "@/lib/ledger-date";
 import { NameColor } from "@/components/ui/name-color";
 
 interface TransferTableProps {
@@ -73,7 +74,7 @@ interface DateGroup {
 }
 
 function transferDateKey(date: string): string {
-  return format(new Date(date), "yyyy-MM-dd");
+  return ledgerDateKey(date);
 }
 
 function transferDateLabel(dateKey: string): string {
@@ -82,7 +83,7 @@ function transferDateLabel(dateKey: string): string {
 }
 
 function transferDateDisplay(date: string): string {
-  return format(new Date(date), "dd MMM yyyy");
+  return format(parseLedgerDate(date), "dd MMM yyyy");
 }
 
 function groupTransfersByDate(transfers: Transfer[]): DateGroup[] {
@@ -299,14 +300,11 @@ export function TransferTable({
   const [pageSize, setPageSize] = useState("10");
 
   const sortedTransfers = useMemo(() => [...transfers].sort((a, b) => {
-    const aValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(a[sortKey]).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
-    const bValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(b[sortKey]).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
+    if (sortKey === "date") return compareLedgerDateThenModified(a, b, sortDirection);
+    const aValue = sortKey === "_updatedAt" ? new Date(a[sortKey]).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
+    const bValue = sortKey === "_updatedAt" ? new Date(b[sortKey]).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison;
-    if (sortKey === "date") {
-      return new Date(b._updatedAt).getTime() - new Date(a._updatedAt).getTime();
-    }
-    return 0;
+    return sortDirection === "asc" ? comparison : -comparison;
   }), [sortKey, sortDirection, transfers]);
   const isGroupedByDate = sortKey === "date";
   const dateGroups = useMemo(

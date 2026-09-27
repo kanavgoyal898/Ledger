@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatINR, type Transaction } from "@/lib/types"
+import { parseLedgerDate } from "@/lib/ledger-date"
 
 type Timeline = "current-week" | "current-month" | "current-year" | "max" | "custom"
 
@@ -33,7 +34,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
         return { start: startOfDay(startOfYear(today)), end: today }
       case "max":
         return { start: transactions.reduce((earliest, transaction) => {
-          const date = new Date(transaction.date)
+          const date = parseLedgerDate(transaction.date)
           return date < earliest ? date : earliest
         }, today), end: today }
       case "custom":
@@ -44,7 +45,7 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
   }, [customEnd, customStart, timeline, transactions])
 
   const visibleTransactions = useMemo(() => transactions.filter((transaction) => {
-    const date = new Date(transaction.date)
+    const date = parseLedgerDate(transaction.date)
     return date >= range.start && date <= range.end
   }), [range, transactions])
 

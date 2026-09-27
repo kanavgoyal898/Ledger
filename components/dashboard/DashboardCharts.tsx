@@ -11,6 +11,7 @@ import { ChartContainer, ChartLegendContent, type ChartConfig } from "@/componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatINR, type Transaction } from "@/lib/types"
 import { stringToColor } from "@/lib/utils"
+import { parseLedgerDate } from "@/lib/ledger-date"
 
 const chartConfig = {
   income: { label: "Income", color: "#10b981" },
@@ -144,7 +145,7 @@ export function DashboardCharts({ transactions, range }: { transactions: Transac
   }, [])
 
   const visibleTransactions = useMemo(() => transactions.filter((transaction) => {
-    const date = new Date(transaction.date)
+    const date = parseLedgerDate(transaction.date)
     return date >= range.start && date <= range.end
   }), [range, transactions])
 
@@ -161,7 +162,7 @@ export function DashboardCharts({ transactions, range }: { transactions: Transac
     return buckets.map((bucket) => {
       const nextBucket = step(bucket, 1)
       const bucketTransactions = visibleTransactions.filter((transaction) => {
-        const date = new Date(transaction.date)
+        const date = parseLedgerDate(transaction.date)
         return date >= bucket && date < nextBucket
       })
       return {
