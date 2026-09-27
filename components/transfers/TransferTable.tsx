@@ -302,7 +302,11 @@ export function TransferTable({
     const aValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(a[sortKey]).getTime() : sortKey === "amount" ? a.amount : String(a[sortKey] || "").toLowerCase();
     const bValue = sortKey === "date" || sortKey === "_updatedAt" ? new Date(b[sortKey]).getTime() : sortKey === "amount" ? b.amount : String(b[sortKey] || "").toLowerCase();
     const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    return sortDirection === "asc" ? comparison : -comparison;
+    if (comparison !== 0) return sortDirection === "asc" ? comparison : -comparison;
+    if (sortKey === "date") {
+      return new Date(b._updatedAt).getTime() - new Date(a._updatedAt).getTime();
+    }
+    return 0;
   }), [sortKey, sortDirection, transfers]);
   const isGroupedByDate = sortKey === "date";
   const dateGroups = useMemo(

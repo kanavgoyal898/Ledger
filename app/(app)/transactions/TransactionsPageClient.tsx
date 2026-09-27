@@ -113,7 +113,7 @@ function TransactionsPageContent() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Sorting — surfaced on mobile next to the Export button
-  const [sortKey, setSortKey] = useState<TransactionSortKey>("_updatedAt");
+  const [sortKey, setSortKey] = useState<TransactionSortKey>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const [loading, setLoading] = useState(true);

@@ -79,7 +79,7 @@ export function TransferSection({ settings }: { settings: Settings }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Sorting — surfaced on mobile/tablet next to the Export button
-  const [sortKey, setSortKey] = useState<TransferSortKey>("_updatedAt");
+  const [sortKey, setSortKey] = useState<TransferSortKey>("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   function handleSortChange(nextKey: TransferSortKey) {

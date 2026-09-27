@@ -16,10 +16,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function DashboardPage() {
-  if (!getAuthenticatedUsername({ cookies: await cookies() })) return <LandingPage />;
+  const username = getAuthenticatedUsername({ cookies: await cookies() });
+  if (!username) return <LandingPage />;
 
   const transactions: Transaction[] = await sanityClient
-    .fetch(TRANSACTIONS_QUERY, {}, { next: { tags: ["transactions"] } })
+    .fetch(TRANSACTIONS_QUERY, { username }, { next: { tags: ["transactions"] } })
     .catch(() => []);
 
   return (

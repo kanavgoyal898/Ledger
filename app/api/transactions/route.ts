@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       params.search = `*${search}*`;
     }
 
-    query += `] | order(_updatedAt desc) {
+    query += `] | order(date desc, _updatedAt desc) {
       _id, _type, username, _createdAt, _updatedAt,
       type, date, amount, category, subCategory,
       account, subAccount, heading, description,

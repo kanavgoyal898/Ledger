@@ -41,7 +41,11 @@ describe("public home page", () => {
   it("preserves the dashboard for signed-in users", async () => {
     getCookie.mockImplementation((name: string) => ({ value: name === "ledger_username" ? "demo" : createSessionToken("demo") }));
     expect((await HomePage()).type).not.toBe(LandingPage);
-    expect(fetchTransactions).toHaveBeenCalledOnce();
+    expect(fetchTransactions).toHaveBeenCalledWith(
+      expect.any(String),
+      { username: "demo" },
+      { next: { tags: ["transactions"] } },
+    );
     expect(await generateMetadata()).toEqual({ title: "Dashboard" });
     const request = new NextRequest("https://ledger.test/transactions");
     request.cookies.set("ledger_username", "demo");

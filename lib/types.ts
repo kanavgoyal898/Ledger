@@ -214,7 +214,7 @@ export const accountItemSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const TRANSFERS_QUERY = `
-  *[_type == "transfer" && username == $username] | order(_updatedAt desc) {
+  *[_type == "transfer" && username == $username] | order(date desc, _updatedAt desc) {
     _id, _type, username, _createdAt, _updatedAt,
     date, amount, fromAccount, fromSubAccount, toAccount, toSubAccount, heading, description
   }
@@ -228,7 +228,7 @@ export const TRANSFER_BY_ID_QUERY = `
 `;
 
 export const TRANSACTIONS_QUERY = `
-  *[_type == "transaction" && username == $username] | order(_updatedAt desc) {
+  *[_type == "transaction" && username == $username] | order(date desc, _updatedAt desc) {
     _id,
     _type,
     username,
