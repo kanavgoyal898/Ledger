@@ -162,7 +162,7 @@ export function TransactionSheet({
   }
 
   const watchedType = form.watch("type");
-  const isIncome = watchedType === "income";
+  const transactionTypeLabel = watchedType === "income" ? "Income" : watchedType === "investment" ? "Investment" : "Expense";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,9 +190,10 @@ export function TransactionSheet({
                       onValueChange={field.onChange}
                       className="w-full"
                     >
-                      <TabsList className="grid w-full grid-cols-2">
+                      <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="expense">Expense</TabsTrigger>
                         <TabsTrigger value="income">Income</TabsTrigger>
+                        <TabsTrigger value="investment">Investment</TabsTrigger>
                       </TabsList>
                     </Tabs>
                   </FormControl>
@@ -515,7 +516,7 @@ export function TransactionSheet({
                   ? "Saving…"
                   : isEditing
                     ? "Save Changes"
-                    : `Add ${isIncome ? "Income" : "Expense"}`}
+                    : `Add ${transactionTypeLabel}`}
               </Button>
             </DialogFooter>
           </form>

@@ -39,7 +39,7 @@ function RuleCard({ rule, settings, onChanged, index = 0 }: { rule: RecurringTra
       <CardHeader className="flex flex-row items-start gap-3 pb-2">
         <div className="min-w-0">
           <CardTitle className="truncate text-sm">{rule.heading || rule.category}</CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">{rule.type === "income" ? "Income" : "Expense"} · {formatRecurrenceFrequency(rule.frequency)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{rule.type === "income" ? "Income" : rule.type === "investment" ? "Investment" : "Expense"} · {formatRecurrenceFrequency(rule.frequency)}</p>
         </div>
         <Badge variant={rule.active ? "secondary" : "outline"} className={rule.active ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"}>{rule.active ? "Active" : "Inactive"}</Badge>
       </CardHeader>

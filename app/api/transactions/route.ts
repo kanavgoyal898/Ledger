@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const from = searchParams.get("from");
     const to = searchParams.get("to");
     const search = searchParams.get("search");
-    const type = searchParams.get("type"); // "income" | "expense" | null
+    const type = searchParams.get("type"); // "income" | "expense" | "investment" | null
 
     let query = `*[_type == "transaction" && username == $username`;
     const params: Record<string, string> = { username };

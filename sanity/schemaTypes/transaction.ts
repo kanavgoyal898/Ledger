@@ -21,6 +21,7 @@ export const transactionSchema = defineType({
         list: [
           { title: "Expense", value: "expense" },
           { title: "Income", value: "income" },
+          { title: "Investment", value: "investment" },
         ],
         layout: "radio",
       },
@@ -87,10 +88,11 @@ export const transactionSchema = defineType({
     },
     prepare({ title, subtitle, amount, date, type }) {
       const isIncome = type === "income";
+      const label = type === "investment" ? "Investment" : isIncome ? "Income" : "Expense";
       const sign = isIncome ? "+" : "-";
       return {
         title: title || `${sign}₹${amount ?? 0}`,
-        subtitle: `${isIncome ? "Income" : "Expense"} · ${subtitle ?? ""} · ${date ? new Date(date).toLocaleDateString("en-IN") : ""}`,
+        subtitle: `${label} · ${subtitle ?? ""} · ${date ? new Date(date).toLocaleDateString("en-IN") : ""}`,
       };
     },
   },

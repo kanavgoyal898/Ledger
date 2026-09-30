@@ -14,7 +14,7 @@ export const recurringTransactionSchema = defineType({
       initialValue: DEFAULT_USERNAME,
     }),
     defineField({ name: "type", title: "Type", type: "string", options: { list: [
-      { title: "Expense", value: "expense" }, { title: "Income", value: "income" },
+      { title: "Expense", value: "expense" }, { title: "Income", value: "income" }, { title: "Investment", value: "investment" },
     ] }, validation: (Rule) => Rule.required() }),
     defineField({ name: "amount", title: "Amount (INR)", type: "number", validation: (Rule) => Rule.required().min(0) }),
     defineField({ name: "category", title: "Category", type: "string", validation: (Rule) => Rule.required() }),

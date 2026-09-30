@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? { title: "Dashboard" }
     : {
         title: { absolute: "Ledger" },
-        description: "Track income and expenses, understand your cash flow, manage recurring payments, and export your records with Ledger, a self-hosted personal finance manager.",
+        description: "Track income, expenses, and investments, understand your cash flow, manage recurring payments, and export your records with Ledger, a self-hosted personal finance manager.",
       };
 }
 

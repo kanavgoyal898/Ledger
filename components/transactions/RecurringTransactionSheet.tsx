@@ -39,8 +39,13 @@ export function RecurringTransactionSheet({ open, onOpenChange, rule, settings, 
   async function save(updatePastTransactions: boolean) {
     setConfirmPast(false); setIsSubmitting(true); setError("");
     try {
-      const response = await fetch(`/api/recurring/${rule._id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...values, updatePastTransactions }) });
-      if (!response.ok) { const result = await response.json(); throw new Error(result.error ?? "Could not update recurring transaction"); }
+      const parsed = recurringTransactionFormSchema.safeParse(values);
+      if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Check the form fields and try again.");
+      const response = await fetch(`/api/recurring/${rule._id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...parsed.data, updatePastTransactions }) });
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.details?.formErrors?.[0] ?? result.error ?? "Could not update recurring transaction");
+      }
       onSuccess(); onOpenChange(false);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not update recurring transaction"); }
     finally { setIsSubmitting(false); }
@@ -48,10 +53,10 @@ export function RecurringTransactionSheet({ open, onOpenChange, rule, settings, 
 
   return <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-2xl flex-col overflow-hidden p-0 sm:w-full" showCloseButton={false}>
+      <DialogContent className="flex max-h-[90vh] w-[95vw] max-w-lg flex-col overflow-hidden p-0 sm:w-full" showCloseButton={false}>
         <DialogHeader className="shrink-0 px-4 pt-6 pb-2 sm:px-6"><DialogTitle>Edit Recurring Transaction</DialogTitle></DialogHeader>
-        <div className="grid flex-1 gap-4 overflow-y-auto px-4 pb-6 sm:grid-cols-2 sm:px-6">
-          <div className="sm:col-span-2"><Label className="mb-2">Type</Label><Tabs value={values.type} onValueChange={(value) => setField("type", value as "income" | "expense")}><TabsList className="grid w-full grid-cols-2"><TabsTrigger value="expense">Expense</TabsTrigger><TabsTrigger value="income">Income</TabsTrigger></TabsList></Tabs></div>
+        <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pb-6 sm:px-6">
+          <div><Label className="mb-2">Type</Label><Tabs value={values.type} onValueChange={(value) => setField("type", value as "income" | "expense" | "investment")}><TabsList className="grid w-full grid-cols-3"><TabsTrigger value="expense">Expense</TabsTrigger><TabsTrigger value="income">Income</TabsTrigger><TabsTrigger value="investment">Investment</TabsTrigger></TabsList></Tabs></div>
           <Field label="Amount (INR)"><Input type="number" inputMode="decimal" value={values.amount} onChange={(event) => setField("amount", event.target.value as never)} /></Field>
           <Field label="Frequency"><Select value={values.frequency} onValueChange={(value) => setField("frequency", value as RecurrenceFrequency)}><SelectTrigger className="w-full"><SelectValue>{formatRecurrenceFrequency(values.frequency)}</SelectValue></SelectTrigger><SelectContent>{RECURRENCE_FREQUENCIES.map((frequency) => <SelectItem key={frequency} value={frequency}>{formatRecurrenceFrequency(frequency)}</SelectItem>)}</SelectContent></Select></Field>
           <Field label="Start Date"><Input type="date" value={values.startDate} onChange={(event) => setField("startDate", event.target.value)} /></Field>
@@ -60,10 +65,10 @@ export function RecurringTransactionSheet({ open, onOpenChange, rule, settings, 
           <Field label="Sub-Category"><Select value={values.subCategory || "__none__"} onValueChange={(value) => setField("subCategory", value === "__none__" ? "" : value ?? "")} disabled={!selectedCategory?.subCategories?.length}><SelectTrigger className="w-full"><SelectValue placeholder="None" /></SelectTrigger><SelectContent><SelectItem value="__none__">None</SelectItem>{selectedCategory?.subCategories?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((item) => <SelectItem key={item.label} value={item.label}><NameColor name={item.label} />{item.label}</SelectItem>)}</SelectContent></Select></Field>
           <Field label="Account"><Select value={values.account} onValueChange={(value) => setValues((current) => ({ ...current, account: value ?? "", subAccount: "" }))}><SelectTrigger className="w-full"><SelectValue>{values.account && <span className="flex items-center gap-2"><NameColor name={values.account} />{values.account}</span>}</SelectValue></SelectTrigger><SelectContent>{settings.accounts?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((item) => <SelectItem key={item._key} value={item.label}><NameColor name={item.label} />{item.label}</SelectItem>)}</SelectContent></Select></Field>
           <Field label="Sub-Account"><Select value={values.subAccount || "__none__"} onValueChange={(value) => setField("subAccount", value === "__none__" ? "" : value ?? "")} disabled={!selectedAccount?.subAccounts?.length}><SelectTrigger className="w-full"><SelectValue placeholder="None" /></SelectTrigger><SelectContent><SelectItem value="__none__">None</SelectItem>{selectedAccount?.subAccounts?.slice().sort((a, b) => a.label.localeCompare(b.label)).map((item) => <SelectItem key={item.label} value={item.label}><NameColor name={item.label} />{item.label}</SelectItem>)}</SelectContent></Select></Field>
-          <Field label="Heading" className="sm:col-span-2"><Input value={values.heading ?? ""} onChange={(event) => setField("heading", event.target.value)} /></Field>
-          <Field label="Description" className="sm:col-span-2"><Textarea rows={3} value={values.description ?? ""} onChange={(event) => setField("description", event.target.value)} /></Field>
-          {error && <p role="alert" className="text-sm text-destructive sm:col-span-2">{error}</p>}
-          <DialogFooter className="sm:col-span-2"><Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancel</Button><Button type="button" onClick={requestSave} disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}Save Changes</Button></DialogFooter>
+          <Field label="Heading"><Input value={values.heading ?? ""} onChange={(event) => setField("heading", event.target.value)} /></Field>
+          <Field label="Description"><Textarea rows={3} value={values.description ?? ""} onChange={(event) => setField("description", event.target.value)} /></Field>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <DialogFooter><Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancel</Button><Button type="button" onClick={requestSave} disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}Save Changes</Button></DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

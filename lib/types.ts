@@ -65,7 +65,7 @@ export interface Transaction {
   username: string;
   _createdAt: string;
   _updatedAt: string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "investment";
   date: string;
   amount: number;
   category: string;
@@ -105,7 +105,7 @@ export interface RecurringTransaction {
   username: string;
   _createdAt: string;
   _updatedAt: string;
-  type: "income" | "expense";
+  type: "income" | "expense" | "investment";
   amount: number;
   category: string;
   subCategory?: string;
@@ -165,7 +165,7 @@ export type TransferFormValues = z.output<typeof transferFormSchema>;
 export type TransferFormInput = z.input<typeof transferFormSchema>;
 
 export const transactionFormSchema = z.object({
-  type: z.enum(["income", "expense"]).default("expense"),
+  type: z.enum(["income", "expense", "investment"]).default("expense"),
   date: z.string().min(1, "Date is required"),
   amount: z.coerce.number({ error: "Amount must be a number" }).min(0, "Amount must be ≥ 0"),
   category: z.string().min(1, "Category is required"),
@@ -316,10 +316,11 @@ export const USER_BY_USERNAME_QUERY = USER_QUERY;
 // ---------------------------------------------------------------------------
 // Utility: format currency
 // ---------------------------------------------------------------------------
-export function formatINR(amount: number): string {
+export function formatINR(amount: number, fractionDigits = 2): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    minimumFractionDigits: 2,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
   }).format(amount);
 }

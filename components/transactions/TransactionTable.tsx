@@ -65,6 +65,22 @@ export const transactionSortKeyLabels: Record<TransactionSortKey, string> = {
   amount: "Amount",
 };
 
+function transactionTypeLabel(type: Transaction["type"]) {
+  return type === "income" ? "Income" : type === "investment" ? "Investment" : "Expense";
+}
+
+function transactionAmountClass(type: Transaction["type"]) {
+  return type === "income" ? "text-emerald-500" : type === "investment" ? "text-sky-500" : "";
+}
+
+function transactionBadgeClass(type: Transaction["type"]) {
+  return type === "income"
+    ? "bg-emerald-500 text-white hover:bg-emerald-600"
+    : type === "investment"
+      ? "bg-sky-500 text-white hover:bg-sky-600"
+      : "";
+}
+
 export function nextTransactionSort(
   currentKey: TransactionSortKey,
   currentDirection: "asc" | "desc",
@@ -126,7 +142,7 @@ function DateGroupHeading({ group }: { group: DateGroup }) {
       <p className="text-xs font-semibold text-muted-foreground">{group.label}</p>
       <p className={`font-mono text-xs font-medium ${group.net >= 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
         {group.net >= 0 ? "+" : "-"}
-        {formatINR(Math.abs(group.net))}
+        {formatINR(Math.abs(group.net), 0)}
       </p>
     </div>
   );
@@ -151,8 +167,8 @@ function TransactionMobileCard({
           <p className="text-xs text-muted-foreground">{transactionDateDisplay(transaction.date)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <span className={`font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
-            {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount)}
+          <span className={`font-mono text-sm font-medium ${transactionAmountClass(transaction.type)}`}>
+            {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount, 0)}
           </span>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -178,8 +194,8 @@ function TransactionMobileCard({
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""}>
-          {transaction.type === "income" ? "Income" : "Expense"}
+        <Badge variant={transaction.type === "expense" ? "destructive" : "default"} className={transactionBadgeClass(transaction.type)}>
+          {transactionTypeLabel(transaction.type)}
         </Badge>
         <Badge variant="secondary">
           <NameColor name={transaction.category} />
@@ -236,8 +252,8 @@ function TransactionTabletRow({
         )}
       </div>
       <div className="flex min-w-0 flex-wrap gap-1">
-        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""}>
-          {transaction.type === "income" ? "Income" : "Expense"}
+        <Badge variant={transaction.type === "expense" ? "destructive" : "default"} className={transactionBadgeClass(transaction.type)}>
+          {transactionTypeLabel(transaction.type)}
         </Badge>
         <Badge variant="secondary" className="max-w-full truncate">
           <NameColor name={transaction.category} />
@@ -260,8 +276,8 @@ function TransactionTabletRow({
           </Badge>
         )}
       </div>
-      <div className={`whitespace-nowrap text-right font-mono text-sm font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
-        {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount)}
+      <div className={`whitespace-nowrap text-right font-mono text-sm font-medium ${transactionAmountClass(transaction.type)}`}>
+        {transaction.type === "income" ? "+" : "-"}{formatINR(transaction.amount, 0)}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger
@@ -313,8 +329,8 @@ function TransactionDesktopRow({
         )}
       </TableCell>
       <TableCell>
-        <Badge variant={transaction.type === "income" ? "default" : "destructive"} className={transaction.type === "income" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}>
-          {transaction.type === "income" ? "Income" : "Expense"}
+        <Badge variant={transaction.type === "expense" ? "destructive" : "default"} className={transactionBadgeClass(transaction.type)}>
+          {transactionTypeLabel(transaction.type)}
         </Badge>
       </TableCell>
       <TableCell>
@@ -345,9 +361,9 @@ function TransactionDesktopRow({
           )}
         </div>
       </TableCell>
-      <TableCell className={`text-right font-mono font-medium ${transaction.type === "income" ? "text-emerald-500" : ""}`}>
+      <TableCell className={`text-right font-mono font-medium ${transactionAmountClass(transaction.type)}`}>
         {transaction.type === "income" ? "+" : "-"}
-        {formatINR(transaction.amount)}
+        {formatINR(transaction.amount, 0)}
       </TableCell>
       <TableCell>
         <DropdownMenu>
@@ -661,7 +677,7 @@ function FragmentGroup({
         </TableCell>
         <TableCell colSpan={1} className={`py-1.5 text-right font-mono text-xs font-medium ${group.net >= 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
           {group.net >= 0 ? "+" : "-"}
-          {formatINR(Math.abs(group.net))}
+          {formatINR(Math.abs(group.net), 0)}
         </TableCell>
         <TableCell colSpan={1} className={`py-1.5 text-right font-mono text-xs font-medium ${group.net >= 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
           

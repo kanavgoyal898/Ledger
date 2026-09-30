@@ -373,11 +373,12 @@ function TransactionsPageContent() {
                   label="Transaction Type"
                   value={filterType}
                   onValueChange={setFilterType}
-                  valueLabels={{ income: "Income", expense: "Expense" }}
+                  valueLabels={{ income: "Income", expense: "Expense", investment: "Investment" }}
                 >
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="income">Income</SelectItem>
                   <SelectItem value="expense">Expense</SelectItem>
+                  <SelectItem value="investment">Investment</SelectItem>
                 </FilterSelect>
               </div>
 

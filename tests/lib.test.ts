@@ -35,6 +35,15 @@ describe("transactionFormSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts a valid investment transaction", () => {
+    const result = transactionFormSchema.safeParse({
+      ...validTransaction,
+      type: "investment",
+      category: "Mutual Funds",
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("accepts a fully populated transaction", () => {
     const result = transactionFormSchema.safeParse({
       ...validTransaction,
@@ -174,6 +183,12 @@ describe("formatINR", () => {
   it("formats decimal amounts correctly", () => {
     const result = formatINR(99.99);
     expect(result).toContain("99.99");
+  });
+
+  it("can format showcase amounts without paisa", () => {
+    const result = formatINR(1500.75, 0);
+    expect(result).toContain("1,501");
+    expect(result).not.toContain(".");
   });
 });
 

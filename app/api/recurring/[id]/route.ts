@@ -19,7 +19,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     const body = await request.json();
     const resumeMode = body.resumeMode as "resume" | "backfill" | undefined;
     const updatePastTransactions = body.updatePastTransactions === true;
-    const parsed = recurringTransactionFormSchema.partial().safeParse(body);
+    const parsed = recurringTransactionFormSchema.safeParse({ ...owned, ...body });
     if (!parsed.success) return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
     const optionalFields = ["subCategory", "subAccount", "heading", "description", "endDate"] as const;
     const unsetFields = optionalFields.filter((field) => parsed.data[field] === "");
@@ -55,7 +55,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       if (pastTransactions.length > 0) {
         const transaction = sanityWriteClient.transaction();
         for (const pastTransaction of pastTransactions) {
-          transaction.patch(pastTransaction._id, (pastPatch) => pastPatch.set(transactionSet).unset(transactionUnset));
+          transaction.patch(pastTransaction._id, (pastPatch) => {
+            let transactionPatch = pastPatch;
+            if (Object.keys(transactionSet).length > 0) transactionPatch = transactionPatch.set(transactionSet);
+            if (transactionUnset.length > 0) transactionPatch = transactionPatch.unset(transactionUnset);
+            return transactionPatch;
+          });
         }
         await transaction.commit();
       }

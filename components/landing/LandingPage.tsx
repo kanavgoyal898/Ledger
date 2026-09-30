@@ -12,7 +12,7 @@ export function LandingPage() {
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Ledger</h1>
         <p className="mt-4 text-xl tracking-tight">A clearer picture of your money.</p>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-          Track income and expenses, manage recurring payments, and understand your cash flow in one simple place.
+          Track income, expenses, and investments, manage recurring payments, and understand your cash flow in one simple place.
         </p>
         <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row">
           <Link

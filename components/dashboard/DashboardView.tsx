@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { format, startOfDay, startOfMonth, startOfWeek, startOfYear } from "date-fns"
 
 import { DashboardCharts } from "@/components/dashboard/DashboardCharts"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatINR, type Transaction } from "@/lib/types"
@@ -54,6 +54,9 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
     .reduce((sum, transaction) => sum + transaction.amount, 0)
   const totalExpenditure = visibleTransactions
     .filter((transaction) => transaction.type === "expense")
+    .reduce((sum, transaction) => sum + transaction.amount, 0)
+  const totalInvestment = visibleTransactions
+    .filter((transaction) => transaction.type === "investment")
     .reduce((sum, transaction) => sum + transaction.amount, 0)
 
   return (
@@ -136,11 +139,11 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         <Card className="min-w-0 animate-fade-up delay-stagger hover:shadow-md transition-shadow" style={{ "--stagger-delay": "100ms" } as React.CSSProperties}>
           <CardHeader className="gap-1">
             <CardTitle key={`income-${totalIncome}-${timeline}`} className="truncate text-xl text-center text-emerald-600 dark:text-emerald-400 sm:text-2xl animate-number-flash tabular-nums">
-              {formatINR(totalIncome)}
+              {formatINR(totalIncome, 0)}
             </CardTitle>
             <CardDescription className="text-center text-xs">Total Income</CardDescription>
           </CardHeader>
@@ -148,9 +151,17 @@ export function DashboardView({ transactions }: { transactions: Transaction[] })
         <Card className="min-w-0 animate-fade-up delay-stagger hover:shadow-md transition-shadow" style={{ "--stagger-delay": "200ms" } as React.CSSProperties}>
           <CardHeader className="gap-1">
             <CardTitle key={`expense-${totalExpenditure}-${timeline}`} className="truncate text-xl text-center text-rose-600 dark:text-rose-400 sm:text-2xl animate-number-flash tabular-nums">
-              {formatINR(totalExpenditure)}
+              {formatINR(totalExpenditure, 0)}
             </CardTitle>
             <CardDescription className="text-center text-xs">Total Expenditure</CardDescription>
+          </CardHeader>
+        </Card>
+        <Card className="min-w-0 animate-fade-up delay-stagger hover:shadow-md transition-shadow" style={{ "--stagger-delay": "300ms" } as React.CSSProperties}>
+          <CardHeader className="gap-1">
+            <CardTitle key={`investment-${totalInvestment}-${timeline}`} className="truncate text-xl text-center text-sky-600 dark:text-sky-400 sm:text-2xl animate-number-flash tabular-nums">
+              {formatINR(totalInvestment, 0)}
+            </CardTitle>
+            <CardDescription className="text-center text-xs">Total Investments</CardDescription>
           </CardHeader>
         </Card>
       </div>

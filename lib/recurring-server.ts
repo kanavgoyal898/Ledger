@@ -48,7 +48,7 @@ export async function processRecurringTransaction(rule: RecurringTransaction, to
     rule.endDate,
   );
   return sanityWriteClient.patch(rule._id)
-    .set({ nextOccurrence: updatedNextOccurrence, resumeFrom: undefined })
+    .set({ nextOccurrence: updatedNextOccurrence })
     .unset(["resumeFrom"])
     .commit();
 }
